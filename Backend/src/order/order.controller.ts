@@ -1,0 +1,47 @@
+import { Controller, Get, Post, Put, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { OrderService } from './order.service';
+import { CreateOrderDto, UpdateOrderStatusDto } from './dto/create-order.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import type { Request } from 'express';
+
+@Controller('orders')
+@UseGuards(JwtAuthGuard) // Semua route wajib login JWT
+export class OrderController {
+  constructor(private readonly orderService: OrderService) {}
+
+  // 🛍️ CUSTOMER: Proses Checkout
+  @Post('checkout')
+  async checkout(@Req() req: Request, @Body() createOrderDto: CreateOrderDto) {
+    const user = req.user as { id: string };
+    const data = await this.orderService.checkout(user.id, createOrderDto);
+    return { status: 'success', message: 'Pesanan berhasil dibuat, silahkan lakukan pembayaran', data };
+  }
+
+  // 🛍️ CUSTOMER: Lihat Riwayat Belanja Saya
+  @Get('my-orders')
+  async getMyOrders(@Req() req: Request) {
+    const user = req.user as { id: string };
+    const data = await this.orderService.getMyOrders(user.id);
+    return { status: 'success', data };
+  }
+
+  // 🔒 ADMIN ONLY: Pantau Semua Transaksi Masuk
+  @Get('admin/all')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async getAllOrders() {
+    const data = await this.orderService.getAllOrders();
+    return { status: 'success', data };
+  }
+
+  // 🔒 ADMIN ONLY: Ubah Status Pengiriman / Pembayaran
+  @Put('admin/:id/status')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
+    const data = await this.orderService.updateStatus(id, dto);
+    return { status: 'success', message: `Status pesanan berhasil diubah menjadi ${dto.status}`, data };
+  }
+}
