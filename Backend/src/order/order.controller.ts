@@ -9,6 +9,8 @@ import type { Request } from 'express';
 @Controller('orders')
 @UseGuards(JwtAuthGuard) // Semua route wajib login JWT
 export class OrderController {
+  productService: any;
+  userService: any;
   constructor(private readonly orderService: OrderService) {}
 
   // 🛍️ CUSTOMER: Proses Checkout
@@ -19,6 +21,29 @@ export class OrderController {
     return { status: 'success', message: 'Pesanan berhasil dibuat, silahkan lakukan pembayaran', data };
   }
 
+  @Get('stats/count')
+      @Roles('ADMIN')
+      async getStats() {
+      // 1. Ambil data count dari masing-masing service secara paralel
+      const [userCount, productCount, orderCount] = await Promise.all([
+        this.userService.countAll(),
+        this.productService.countAll(), // Pastikan productService sudah di-inject di constructor
+        this.orderService.countAll(),   // Pastikan orderService sudah di-inject di constructor
+      ]);
+      
+      // 2. Kembalikan data dengan struktur { data: { users, products, orders } } 
+      // agar langsung klop dengan dashboard frontend Next.js Anda
+      return {
+        statusCode: 200,
+        message: 'Berhasil mengambil statistik data',
+        data: {
+          users: userCount,
+          products: productCount,
+          orders: orderCount,
+        },
+      };
+      }
+      
   // 🛍️ CUSTOMER: Lihat Riwayat Belanja Saya
   @Get('my-orders')
   async getMyOrders(@Req() req: Request) {

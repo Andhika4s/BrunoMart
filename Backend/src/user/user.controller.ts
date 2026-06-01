@@ -52,6 +52,22 @@ export class UserController {
     };
   }
 
+// Tambahkan endpoint ini untuk statistik
+  @Get('stats/count')
+  @Roles(Role.ADMIN)
+  async getStats() {
+    const userCount = await this.userService.countAll();
+    // Jika Anda punya ProductService, panggil di sini juga
+    // const productCount = await this.productService.countAll(); 
+    
+    return {
+      statusCode: HttpStatus.OK,
+      data: {
+        users: userCount,
+        // products: productCount,
+      },
+    };
+  }
 
 
   @Put(':id')

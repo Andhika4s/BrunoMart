@@ -109,6 +109,10 @@ async findByEmail(email: string) {
   return this.prisma.user.findUnique({ where: { email } });
   }
 
+  // Tambahkan ini untuk mendapatkan total user
+  async countAll(): Promise<number> {
+    return await this.prisma.user.count();
+  }
   async deleteAccount(userId: string) {
   const activeOrders = await this.prisma.order.findMany({
     where: {

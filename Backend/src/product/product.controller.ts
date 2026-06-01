@@ -1,28 +1,30 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Delete, 
-  Body, 
-  Param, 
-  Query, 
-  UseGuards, 
-  UseInterceptors, // 💡 Tambahkan ini
-  UploadedFile,    // 💡 Tambahkan ini
-  BadRequestException 
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query, // 💡 Tambahkan ini
+  UploadedFile,
+  UseGuards,
+  UseInterceptors
 } from '@nestjs/common';
-import { ProductService } from './product.service';
-import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
 import { FileInterceptor } from '@nestjs/platform-express'; // 💡 Tambahkan ini
 import { diskStorage } from 'multer'; // 💡 Tambahkan ini
 import { extname } from 'path'; // 💡 Tambahkan ini
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
+import { ProductService } from './product.service';
 
 @Controller('products')
 export class ProductController {
+  userService: any;
+  orderService: any;
   constructor(private readonly productService: ProductService) {}
 
   @Get()
@@ -41,6 +43,28 @@ export class ProductController {
     return { status: 'success', data };
   }
 
+  @Get('stats/count')
+  @Roles('ADMIN')
+  async getStats() {
+    // 1. Ambil data count dari masing-masing service secara paralel
+    const [userCount, productCount, orderCount] = await Promise.all([
+      this.userService.countAll(),
+      this.productService.countAll(), // Pastikan productService sudah di-inject di constructor
+      this.orderService.countAll(),   // Pastikan orderService sudah di-inject di constructor
+    ]);
+
+    // 2. Kembalikan data dengan struktur { data: { users, products, orders } } 
+    // agar langsung klop dengan dashboard frontend Next.js Anda
+    return {
+      statusCode: 200,
+      message: 'Berhasil mengambil statistik data',
+      data: {
+        users: userCount,
+        products: productCount,
+        orders: orderCount,
+      },
+    };
+  }
   // 🔒 ADMIN ONLY: Tambah Produk Baru + UPLOAD FOTO
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -100,4 +124,5 @@ export class ProductController {
     await this.productService.remove(id);
     return { status: 'success', message: 'Produk berhasil dihapus' };
   }
+  
 }

@@ -6,6 +6,9 @@ import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 export class ProductService {
   constructor(private prisma: PrismaService) {}
 
+  async countAll(): Promise<number> {
+    return await this.prisma.product.count(); // Sesuaikan nama model prisma Anda (misal: product atau info)
+  }
   async findAll(search?: string, category?: string, sort?: string) {
     const whereClause: any = {};
     if (search) {
