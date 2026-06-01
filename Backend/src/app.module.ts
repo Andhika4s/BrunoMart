@@ -7,9 +7,24 @@ import { AuthModule } from './auth/auth.module';
 import { ProductModule } from './product/product.module';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
+import { ServeStaticModule } from '@nestjs/serve-static'; 
+import { join } from 'path'; 
 
 @Module({
-  imports: [UserModule, PrismaModule, AuthModule, ProductModule, CartModule, OrderModule],
+  imports: [
+    // 💡 PERBAIKAN DI SINI:
+    ServeStaticModule.forRoot({
+      // Kita gunakan process.cwd() agar NestJS murni mencari folder 'uploads' dari ROOT project, bukan dari folder 'dist'
+      rootPath: join(process.cwd(), 'uploads'), 
+      serveRoot: '/uploads', 
+    }),
+    UserModule, 
+    PrismaModule, 
+    AuthModule, 
+    ProductModule, 
+    CartModule, 
+    OrderModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
