@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql" // Anda bisa menggantinya dengan "mysql" jika menggunakan MariaDB/MySQL
+  provider = "postgresql" 
   url      = env("DATABASE_URL")
 }
 

@@ -34,6 +34,13 @@ export class UserController {
     };
   }
 
+  @Get('profile')
+    @UseGuards(JwtAuthGuard)
+      async getMyProfile(@Req() req: Request) {
+        const user = req.user as { id: string };
+        const data = await this.userService.findOne(user.id);
+    return { statusCode: HttpStatus.OK, data };
+  }
   
   @Get(':id')
   async findOne(@Param('id') id: string) {
@@ -44,6 +51,7 @@ export class UserController {
       data: user,
     };
   }
+
 
 
   @Put(':id')

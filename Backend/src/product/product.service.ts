@@ -5,6 +5,7 @@ import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 @Injectable()
 export class ProductService {
   constructor(private prisma: PrismaService) {}
+
   async findAll(search?: string, category?: string, sort?: string) {
     const whereClause: any = {};
     if (search) {
@@ -14,10 +15,10 @@ export class ProductService {
       ];
     }
 
-
     if (category) {
       whereClause.category = { equals: category, mode: 'insensitive' };
     }
+    
     let orderByClause: any = { createdAt: 'desc' };
     if (sort === 'price_asc') orderByClause = { price: 'asc' };
     if (sort === 'price_desc') orderByClause = { price: 'desc' };
@@ -28,7 +29,6 @@ export class ProductService {
     });
   }
 
-
   async findOne(id: string) {
     const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) {
@@ -37,19 +37,28 @@ export class ProductService {
     return product;
   }
 
-
+  // 💡 PERBAIKAN DI METHOD CREATE
   async create(createProductDto: CreateProductDto) {
     return this.prisma.product.create({
-      data: createProductDto,
+      data: {
+        name: createProductDto.name,
+        description: createProductDto.description,
+        price: createProductDto.price,
+        stock: createProductDto.stock,
+        category: createProductDto.category,
+        image: createProductDto.image || 'uploads/default.png', // Menjaga jika frontend lupa kirim gambar agar tidak null
+      },
     });
   }
 
-
+  // 💡 PERBAIKAN DI METHOD UPDATE (Agar jika admin edit barang tanpa ganti foto, fotonya tidak hilang)
   async update(id: string, updateProductDto: UpdateProductDto) {
     await this.findOne(id); 
     return this.prisma.product.update({
       where: { id },
-      data: updateProductDto,
+      data: {
+        ...updateProductDto,
+      },
     });
   }
 
