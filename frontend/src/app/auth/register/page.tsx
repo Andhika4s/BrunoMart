@@ -25,21 +25,26 @@ export default function RegisterPage() {
   });
 
 const onSubmit = (data: RegisterInput) => {
-    // PENGAMAN UTAMA: Jika status sedang pending, langsung batalkan request tambahan
-    if (isPending) return;
+  if (isPending) return;
 
-    registerUser(data, {
-      onSuccess: () => {
-        alert('Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.');
-        router.push('/auth/login');
-      },
-      onError: (error: any) => {
-        // Hanya tampilkan error jika ini bukan akibat double klik ter-cache
-        const message = error?.response?.data?.message || 'Terjadi kesalahan saat registrasi.';
-        alert(message);
-      }
-    });
-  };
+  registerUser(data, {
+    onSuccess: () => {
+      alert('Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.');
+      router.push('/auth/login');
+    },
+    onError: (error: any) => {
+      // Ambil message dari NestJS, jika tidak ada baru gunakan fallback
+      const serverMessage = error?.response?.data?.message;
+      
+      // Jika error berupa array (bawaan ValidationPipe NestJS biasanya mengembalikan array untuk class-validator)
+      const message = Array.isArray(serverMessage) 
+        ? serverMessage[0] 
+        : serverMessage || 'Terjadi kesalahan saat registrasi.';
+
+      alert(message);
+    }
+  });
+};
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
