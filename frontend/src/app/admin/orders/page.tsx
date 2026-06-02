@@ -25,8 +25,7 @@ export default function AdminOrdersPage() {
       const response = await api.get('/orders/admin/all'); 
       
       // Mengambil data dari response structure backend ({ status: 'success', data: [...] })
-      const data = response.data?.data || [];
-      setOrders(Array.isArray(data) ? data : []);
+      const [orders, setOrders] = useState<any[]>([]);
     } catch (error) {
       console.error(error);
       toast.error('Gagal mengambil data pesanan pembeli');

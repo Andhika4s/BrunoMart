@@ -29,10 +29,6 @@ export default function Navbar() {
     setMounted(true);
   }, []);
   const isAdminPage = pathname.startsWith('/admin');
-  if (isAdminPage) {
-    return null;
-  }
-  
   const { data: cart } = useQuery<Cart>({
     queryKey: ['cart'],
     queryFn: async () => {
@@ -43,6 +39,8 @@ export default function Navbar() {
     enabled: mounted && !!user, 
     retry: false, 
   });
+  
+  if (isAdminPage) return null;
 
   const totalCartCount = cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
 
