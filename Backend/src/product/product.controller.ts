@@ -51,6 +51,7 @@ export class ProductController {
 
   @Get('stats/count')
   @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async getStats() {
     const [userCount, productCount, orderCount] = await Promise.all([
