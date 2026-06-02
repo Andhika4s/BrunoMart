@@ -48,13 +48,13 @@ export default function LandingPage() {
             
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
               <Link href="/products" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-semibold transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-600/20">
+                <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-semibold transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-blue-600/20">
                   Mulai Belanja <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               {/* 🔗 FIX LINK: Diarahkan ke sub-route login resmi */}
               <Link href="/auth/login" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full border-slate-800 bg-slate-900/40 text-slate-300 hover:bg-slate-800 hover:text-white flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-semibold backdrop-blur-sm transition-all">
+                <Button size="lg" variant="outline" className="w-full bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-semibold backdrop-blur-sm transition-all">
                   Buat Akun Baru
                 </Button>
               </Link>
@@ -102,64 +102,81 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 2. FEATURES SECTION (KEUNGGULAN) */}
-      <section id="features" className="py-24 relative bg-slate-950 border-b border-slate-900">
-        <div className="container mx-auto px-4 max-w-6xl">
-          
-          <div className="text-center max-w-2xl mx-auto mb-20 space-y-3">
-            <h2 className="text-xs font-bold text-blue-500 tracking-widest uppercase">Keunggulan Utama</h2>
-            <h3 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Mengapa Harus Memilih BrunoMart?
-            </h3>
-            <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-              Kami menghadirkan pengalaman belanja online terbaik di ekosistem sekolah dengan jaminan kenyamanan ekstra.
-            </p>
+     {/* 2. FEATURES SECTION (KEUNGGULAN) */}
+<section id="features" className="py-24 relative bg-slate-950 border-b border-slate-900">
+  <div className="container mx-auto px-4 max-w-6xl">
+    
+    {/* Header Section */}
+    <div className="text-center max-w-2xl mx-auto mb-20 space-y-3">
+      <h2 className="text-xs font-bold text-blue-500 tracking-widest uppercase">Keunggulan Utama</h2>
+      <h3 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+        Mengapa Harus Memilih BrunoMart?
+      </h3>
+      <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
+        Kami menghadirkan pengalaman belanja online terbaik di ekosistem sekolah dengan jaminan kenyamanan ekstra.
+      </p>
+    </div>
+
+    {/* Grid Cards */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      {/* Feature 1 - Keamanan */}
+      <Card className="border border-slate-900 bg-slate-900/40 shadow-xl hover:border-slate-800 hover:bg-slate-900/70 transition-all duration-300 group rounded-2xl backdrop-blur-sm overflow-hidden">
+        <CardContent className="p-8 space-y-4">
+          {/* Icon Wrapper */}
+          <div className="h-12 w-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+            <ShieldCheck className="h-6 w-6" />
           </div>
+          {/* Title - Dipastikan text-white agar kontras */}
+          <h4 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors pt-2">
+            Keamanan Terjamin
+          </h4>
+          {/* Description - Warna text-slate-400 agar nyaman dibaca di dark mode */}
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Autentikasi menggunakan enkripsi data ketat end-to-end, memastikan saldo dan rahasia akun Anda aman sepanjang waktu.
+          </p>
+        </CardContent>
+      </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            {/* Feature 1 */}
-            <Card className="border border-slate-900 bg-slate-900/20 shadow-sm hover:border-slate-800 hover:bg-slate-900/50 transition-all duration-300 group rounded-2xl backdrop-blur-sm">
-              <CardContent className="p-8 space-y-5">
-                <div className="h-12 w-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                  <ShieldCheck className="h-6 w-6" />
-                </div>
-                <h4 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">Keamanan Terjamin</h4>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Autentikasi menggunakan enkripsi data ketat end-to-end, memastikan saldo dan rahasia akun Anda aman sepanjang waktu.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Feature 2 */}
-            <Card className="border border-slate-900 bg-slate-900/20 shadow-sm hover:border-slate-800 hover:bg-slate-900/50 transition-all duration-300 group rounded-2xl backdrop-blur-sm">
-              <CardContent className="p-8 space-y-5">
-                <div className="h-12 w-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                  <Truck className="h-6 w-6" />
-                </div>
-                <h4 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors">Pemrosesan Cepat</h4>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Sistem manajemen stok otomatis dan real-time. Barang pesanan Anda langsung siap diambil atau diantar setelah checkout.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Feature 3 */}
-            <Card className="border border-slate-900 bg-slate-900/20 shadow-sm hover:border-slate-800 hover:bg-slate-900/50 transition-all duration-300 group rounded-2xl backdrop-blur-sm">
-              <CardContent className="p-8 space-y-5">
-                <div className="h-12 w-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 group-hover:bg-cyan-600 group-hover:text-white transition-all duration-300">
-                  <Clock className="h-6 w-6" />
-                </div>
-                <h4 className="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors">Akses Fleksibel 24/7</h4>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Kelola keranjang belanja, periksa transaksi, dan pantau ketersediaan produk kantin kapan saja tanpa batasan jam sekolah.
-                </p>
-              </CardContent>
-            </Card>
-
+      {/* Feature 2 - Pemrosesan Cepat */}
+      <Card className="border border-slate-900 bg-slate-900/40 shadow-xl hover:border-slate-800 hover:bg-slate-900/70 transition-all duration-300 group rounded-2xl backdrop-blur-sm overflow-hidden">
+        <CardContent className="p-8 space-y-4">
+          {/* Icon Wrapper */}
+          <div className="h-12 w-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+            <Truck className="h-6 w-6" />
           </div>
-        </div>
-      </section>
+          {/* Title */}
+          <h4 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors pt-2">
+            Pemrosesan Cepat
+          </h4>
+          {/* Description */}
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Sistem manajemen stok otomatis dan real-time. Barang pesanan Anda langsung siap diambil atau diantar setelah checkout.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Feature 3 - Akses Fleksibel */}
+      <Card className="border border-slate-900 bg-slate-900/40 shadow-xl hover:border-slate-800 hover:bg-slate-900/70 transition-all duration-300 group rounded-2xl backdrop-blur-sm overflow-hidden">
+        <CardContent className="p-8 space-y-4">
+          {/* Icon Wrapper */}
+          <div className="h-12 w-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 group-hover:bg-cyan-600 group-hover:text-white transition-all duration-300">
+            <Clock className="h-6 w-6" />
+          </div>
+          {/* Title */}
+          <h4 className="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors pt-2">
+            Akses Fleksibel 24/7
+          </h4>
+          {/* Description */}
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Kelola keranjang belanja, periksa transaksi, dan pantau ketersediaan produk kantin kapan saja tanpa batasan jam sekolah.
+          </p>
+        </CardContent>
+      </Card>
+
+    </div>
+  </div>
+</section>
 
       {/* 3. CALL TO ACTION SECTION */}
       <section id="cta" className="py-24 bg-slate-950 relative overflow-hidden">
