@@ -16,7 +16,6 @@ import { Button } from '@/components/ui/button';
    BRUNOMART LANDING PAGE
    Aesthetic: refined dark-commerce
    Palette: slate-950 base / blue-500 accent
-   Typography: tight tracking, bold hierarchy
 ───────────────────────────────────────────── */
 
 const FEATURES = [
@@ -50,34 +49,18 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 antialiased overflow-x-hidden selection:bg-blue-600 selection:text-white font-sans">
 
-      {/* ── NAVBAR ── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2 font-bold text-white">
-            <Store className="h-5 w-5 text-blue-500" />
-            <span>Bruno<span className="font-medium text-slate-400">Mart</span></span>
-          </div>
-          <Link href="/auth/login">
-            <Button
-              size="sm"
-              className="h-8 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-500"
-            >
-              Masuk
-            </Button>
-          </Link>
-        </div>
-      </header>
+      {/* 💡 NAVBAR MANUAL DI SINI SUDAH DIHAPUS TOTAL AGAR TIDAK NUMPUK DENGAN NAVBAR UTAMA */}
 
       {/* ── HERO ── */}
-      <section className="relative flex min-h-screen items-center justify-center pt-14">
+      <section className="relative flex min-h-screen items-center justify-center pt-16">
 
         {/* Background glows */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute left-1/2 top-0 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-blue-600/8 blur-[140px]" />
-          <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-indigo-500/6 blur-[120px]" />
+          <div className="absolute left-1/2 top-0 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-blue-600/10 blur-[140px]" />
+          <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-indigo-500/5 blur-[120px]" />
           {/* Subtle grid */}
           <div
-            className="absolute inset-0 opacity-[0.03]"
+            className="absolute inset-0 opacity-[0.02]"
             style={{
               backgroundImage:
                 'linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)',
@@ -92,17 +75,19 @@ export default function LandingPage() {
           <div className="space-y-8 text-center lg:text-left">
 
             {/* Badge */}
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/8 px-3 py-1 text-xs font-medium text-blue-400">
-              <Sparkles className="h-3 w-3 animate-pulse" />
-              E-Commerce Sekolah Modern v2.0
-            </span>
+            <div className="flex justify-center lg:justify-start">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 px-3 py-1 text-xs font-medium text-blue-400 backdrop-blur-sm">
+                <Sparkles className="h-3 w-3 animate-pulse text-blue-400" />
+                E-Commerce Sekolah Modern v2.0
+              </span>
+            </div>
 
             {/* Headline */}
             <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl xl:text-6xl">
               Penuhi Kebutuhan{' '}
               <br className="hidden sm:block" />
               Harianmu di{' '}
-              <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-sky-400 bg-clip-text text-transparent">
                 BrunoMart
               </span>
             </h1>
@@ -115,15 +100,12 @@ export default function LandingPage() {
             {/* CTAs */}
             <div className="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
               <Link href="/products" className="w-full sm:w-auto">
-                <Button className="h-11 w-full rounded-xl bg-blue-600 px-6 font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-500 hover:scale-[1.02] sm:w-auto">
+                <Button className="h-11 w-full rounded-xl bg-blue-600 px-6 font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-500 hover:scale-[1.02] sm:w-auto">
                   Mulai Belanja <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/auth/login" className="w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  className="h-11 w-full rounded-xl  bg-blue-600 px-6 font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-500 hover:scale-[1.02] sm:w-auto"
-                >
+              <Link href="/auth/register" className="w-full sm:w-auto">
+                <Button className="h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] sm:w-auto">
                   Buat Akun Baru
                 </Button>
               </Link>
@@ -142,18 +124,18 @@ export default function LandingPage() {
 
           {/* Right — App card */}
           <div className="relative flex justify-center lg:justify-end">
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-blue-600/20 to-indigo-500/10 blur-3xl" />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-blue-600/10 to-indigo-500/5 blur-3xl" />
 
-            <div className="relative w-full max-w-sm rounded-3xl border border-slate-800 bg-slate-950 p-6 shadow-2xl">
+            <div className="relative w-full max-w-sm rounded-3xl border border-slate-900 bg-slate-900/20 p-6 shadow-2xl backdrop-blur-md">
 
               {/* Window chrome */}
               <div className="mb-5 flex items-center justify-between border-b border-slate-900 pb-4">
                 <div className="flex gap-1.5">
-                  {['bg-red-500/60', 'bg-yellow-500/60', 'bg-green-500/60'].map((c) => (
+                  {['bg-red-500/40', 'bg-yellow-500/40', 'bg-green-500/40'].map((c) => (
                     <div key={c} className={`h-2.5 w-2.5 rounded-full ${c}`} />
                   ))}
                 </div>
-                <span className="rounded border border-slate-800 bg-slate-900 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-slate-500">
+                <span className="rounded border border-slate-900 bg-slate-950 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-slate-500">
                   Secure Live
                 </span>
               </div>
@@ -161,8 +143,8 @@ export default function LandingPage() {
               {/* Icon */}
               <div className="flex flex-col items-center py-8">
                 <div className="relative">
-                  <div className="absolute inset-0 animate-pulse rounded-2xl bg-blue-500/20 blur-xl" />
-                  <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl shadow-blue-500/20">
+                  <div className="absolute inset-0 animate-pulse rounded-2xl bg-blue-500/10 blur-xl" />
+                  <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl shadow-blue-500/10">
                     <Store className="h-10 w-10 text-white" />
                   </div>
                 </div>
@@ -171,7 +153,7 @@ export default function LandingPage() {
               </div>
 
               {/* Status bar */}
-              <div className="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/60 px-4 py-3 text-xs backdrop-blur">
+              <div className="flex items-center justify-between rounded-xl border border-slate-900 bg-slate-950/60 px-4 py-3 text-xs backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-slate-400">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
@@ -183,7 +165,7 @@ export default function LandingPage() {
               </div>
 
               {/* Stat row */}
-              <div className="mt-4 grid grid-cols-3 divide-x divide-slate-800/60 rounded-xl border border-slate-800/60 bg-slate-900/40 text-center">
+              <div className="mt-4 grid grid-cols-3 divide-x divide-slate-900 rounded-xl border border-slate-900 bg-slate-950/40 text-center">
                 {[['500+', 'Produk'], ['1K+', 'Pengguna'], ['99%', 'Uptime']].map(([n, l]) => (
                   <div key={l} className="px-3 py-3">
                     <p className="text-sm font-bold text-white">{n}</p>
@@ -197,34 +179,34 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FEATURES ── */}
-      <section className="border-y border-slate-800/60 bg-slate-950 py-24">
+      {/* ── FEATURES (KEUNGGULAN) ── */}
+      <section id="features" className="border-t border-slate-900 bg-slate-950 py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
 
-          <div className="mb-16 text-center">
-            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-blue-500">Keunggulan Utama</p>
+          <div className="mb-20 text-center space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-blue-500">Keunggulan Utama</p>
             <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Mengapa Memilih BrunoMart?
+              Mengapa Harus Memilih BrunoMart?
             </h2>
-            <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400">
-              Pengalaman belanja online terbaik di ekosistem sekolah dengan jaminan kenyamanan ekstra.
+            <p className="mx-auto max-w-2xl text-sm sm:text-base leading-relaxed text-slate-400">
+              Kami menghadirkan pengalaman belanja online terbaik di ekosistem sekolah dengan jaminan kenyamanan ekstra.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {FEATURES.map(({ icon: Icon, color, title, desc }) => {
               const c = COLOR_MAP[color];
               return (
                 <div
                   key={title}
-                  className="group rounded-2xl border border-slate-800/60 bg-slate-900/20 p-8 transition-all duration-300 hover:border-slate-700 hover:bg-slate-900/60"
+                  className="group rounded-2xl border border-slate-900 bg-slate-900/20 p-8 transition-all duration-300 hover:border-slate-800 hover:bg-slate-900/50 backdrop-blur-sm"
                 >
                   <div
-                    className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl border transition-all duration-300 ${c.icon} ${c.ring}`}
+                    className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl border transition-all duration-300 ${c.ring}`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className={`h-5 w-5 ${c.icon}`} />
                   </div>
-                  <h3 className={`mb-2 text-base font-bold text-white transition-colors duration-200 ${c.label}`}>
+                  <h3 className={`mb-3 text-lg font-bold text-white transition-colors duration-200 ${c.label}`}>
                     {title}
                   </h3>
                   <p className="text-sm leading-relaxed text-slate-400">{desc}</p>
@@ -235,16 +217,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section className="relative overflow-hidden py-24">
+      {/* ── CTA / TENTANG KAMI ── */}
+      <section id="cta" className="relative overflow-hidden py-24 border-t border-slate-900">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/2 top-1/2 h-[400px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/5 blur-[120px]" />
         </div>
 
         <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6">
-          <div className="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-b from-slate-900 to-slate-950 px-8 py-14 text-center shadow-2xl sm:px-14">
-            {/* Corner accent */}
-            <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-indigo-500/8 blur-2xl" />
+          <div className="relative overflow-hidden rounded-3xl border border-slate-900 bg-gradient-to-b from-slate-900/50 to-slate-950 px-8 py-14 text-center shadow-2xl sm:px-14 backdrop-blur-sm">
+            <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-indigo-500/5 blur-2xl" />
 
             <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
               Siap Menikmati Kemudahan Berbelanja?
@@ -254,14 +235,14 @@ export default function LandingPage() {
             </p>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link href="/auth/login">
-                <Button className="h-11 rounded-xl bg-blue-600 px-8 font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-500">
+                <Button className="h-11 rounded-xl bg-blue-600 px-8 font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-500">
                   Sign In Sekarang
                 </Button>
               </Link>
               <Link href="/products">
                 <Button
                   variant="ghost"
-                  className="h-11 rounded-xl px-8 font-semibold text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                  className="h-11 rounded-xl px-8 font-semibold text-slate-400 transition-all duration-200 hover:bg-slate-900 hover:text-white"
                 >
                   Lihat Produk
                 </Button>
@@ -272,13 +253,13 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t border-slate-800/60 bg-black py-8">
+      <footer className="border-t border-slate-900 bg-black py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row sm:px-6">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
             <Store className="h-4 w-4 text-blue-500" />
             Bruno<span className="font-medium text-slate-500">Mart</span>
-            <span className="text-slate-700">|</span>
-            <span className="text-xs font-normal text-slate-600">© {new Date().getFullYear()}</span>
+            <span className="text-slate-800">|</span>
+            <span className="text-xs font-normal text-slate-600">© 2026</span>
           </div>
           <p className="text-xs text-slate-600">
             Dibuat berbasis perangkat lunak terintegrasi &amp; modern
