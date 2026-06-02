@@ -78,7 +78,7 @@ export default function LandingPage() {
             <div className="flex justify-center lg:justify-start">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 px-3 py-1 text-xs font-medium text-blue-400 backdrop-blur-sm">
                 <Sparkles className="h-3 w-3 animate-pulse text-blue-400" />
-                E-Commerce Sekolah Modern v2.0
+                E-Commerce
               </span>
             </div>
 
@@ -97,19 +97,19 @@ export default function LandingPage() {
               Platform belanja digital yang praktis, cepat, dan aman — dirancang khusus untuk menyederhanakan transaksi seluruh komunitas sekolah dalam satu ketukan.
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
-              <Link href="/products" className="w-full sm:w-auto">
-                <Button className="h-11 w-full rounded-xl bg-blue-600 px-6 font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-500 hover:scale-[1.02] sm:w-auto">
-                  Mulai Belanja <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/auth/register" className="w-full sm:w-auto">
-                <Button className="h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] sm:w-auto">
-                  Buat Akun Baru
-                </Button>
-              </Link>
-            </div>
+        {/* CTAs */}
+          <div className="flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
+            <Link href="/products" className="w-full sm:w-auto">
+              <Button className="h-11 w-full rounded-xl bg-blue-600 px-6 font-bold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-500 hover:scale-[1.02] sm:w-auto">
+                Mulai Belanja <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/auth/register" className="w-full sm:w-auto">
+              <Button className="h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 font-bold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] sm:w-auto">
+                Buat Akun Baru
+              </Button>
+            </Link>
+</div>
 
             {/* Trust row */}
             <div className="flex items-center justify-center gap-6 pt-2 lg:justify-start">
