@@ -10,6 +10,36 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 
+// 1. DEFINISI INTERFACE PROPS UNTUK STAT CARD
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  colorClass: string;
+}
+
+// 2. KOMPONEN ANAK (Diletakkan di atas agar terbaca dengan baik oleh main component)
+function StatCard({ title, value, icon, colorClass }: StatCardProps) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition duration-200 flex flex-col justify-between">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold text-slate-400 tracking-wider">
+          {title}
+        </p>
+        <div className={`p-2.5 rounded-xl border ${colorClass}`}>
+          {icon}
+        </div>
+      </div>
+      <div className="mt-4">
+        <h3 className="text-3xl font-black text-slate-800 tracking-tight">
+          {value}
+        </h3>
+      </div>
+    </div>
+  );
+}
+
+// 3. MAIN COMPONENT EXPORT
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     users: 0,
@@ -24,36 +54,41 @@ export default function AdminDashboard() {
       try {
         setLoading(true);
         
-        // Melakukan fetch ke kedua endpoint secara bersamaan demi akurasi data
+        // Melakukan fetch paralel ke endpoint NestJS
         const [statsResponse, productsResponse] = await Promise.all([
           api.get('/user/stats/count').catch((err) => {
-            console.error('Gagal mengambil statistik umum:', err);
+            // Jika memunculkan log ini, periksa endpoint /user/stats/count di NestJS kamu!
+            console.error('ERROR: Gagal mengambil statistik umum dari backend:', err?.response?.data || err.message);
             return { data: { data: { users: 0, orders: 0 } } };
           }),
           api.get('/products').catch((err) => {
-            console.error('Gagal mengambil data produk alternatif:', err);
-            return { data: [] };
+            console.error('ERROR: Gagal mengambil data list produk:', err?.response?.data || err.message);
+            return { data: { data: [] } };
           }),
         ]);
 
-        // Parsing data statistik dasar dari backend
+        // --- PARSING DATA USER & ORDER ---
+        // Menyesuaikan dengan standar response `{ data: { data: { users, orders } } }` atau `{ data: { users, orders } }`
         const statsData = statsResponse.data?.data || statsResponse.data || {};
         
-        // Parsing data produk riil untuk mendapatkan jumlah total item aktif
-        const productsData = Array.isArray(productsResponse.data)
-          ? productsResponse.data
-          : productsResponse.data?.data || [];
+        // --- PARSING DATA PRODUK ---
+        // Mengamankan jika data bersarang di dalam .data.data (bawaan interceptor/axios standard)
+        let productsCount = 0;
+        if (Array.isArray(productsResponse.data)) {
+          productsCount = productsResponse.data.length;
+        } else if (Array.isArray(productsResponse.data?.data)) {
+          productsCount = productsResponse.data.data.length;
+        }
 
+        // Set state ke react untuk trigger re-render UI secara riil
         setStats({
-          // Mengambil total pengguna dari endpoint statistik
           users: statsData.users || 0,
-          // Menggunakan jumlah panjang array produk riil jika statistik bernilai 0
-          products: productsData.length || statsData.products || 0,
-          // Mengambil total pesanan dari endpoint statistik
+          products: productsCount || statsData.products || 0,
           orders: statsData.orders || 0,
         });
+
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error('Fatal error dalam siklus fetchDashboardData:', error);
       } finally {
         setLoading(false);
       }
@@ -68,21 +103,21 @@ export default function AdminDashboard() {
         {/* Header Dashboard */}
         <div className="mb-8">
           <h2 className="text-3xl font-black text-slate-800 tracking-tight">
-            Dashboard
+            Dashboard Admin
           </h2>
           <p className="text-slate-500 text-sm mt-1">
-            Ringkasan data dan metrik performa BrunoMart
+            Ringkasan data riil dan metrik performa database BrunoMart
           </p>
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center p-20 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-400">
             <Loader2 className="animate-spin mb-3 text-blue-600" size={32} />
-            <p className="text-sm font-medium">Memuat metrik statistik...</p>
+            <p className="text-sm font-medium">Menghubungkan ke server backend...</p>
           </div>
         ) : (
           <>
-            {/* Grid Kartu Statistik */}
+            {/* Grid Kartu Statistik Riil */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard
                 title="TOTAL PENGGUNA"
@@ -145,33 +180,6 @@ export default function AdminDashboard() {
           </>
         )}
       </main>
-    </div>
-  );
-}
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  colorClass: string;
-}
-
-function StatCard({ title, value, icon, colorClass }: StatCardProps) {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition duration-200 flex flex-col justify-between">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-bold text-slate-400 tracking-wider">
-          {title}
-        </p>
-        <div className={`p-2.5 rounded-xl border ${colorClass}`}>
-          {icon}
-        </div>
-      </div>
-      <div className="mt-4">
-        <h3 className="text-3xl font-black text-slate-800 tracking-tight">
-          {value}
-        </h3>
-      </div>
     </div>
   );
 }

@@ -8,19 +8,26 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Ref terpisah untuk masing-masing input file agar tidak bentrok
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
+  // State untuk form Tambah Produk
   const [formData, setFormData] = useState({
     name: '', description: '', price: '', stock: '', category: '',
     image: null as File | null
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // State untuk form Edit Produk
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
-    name: '', description: '', price: '', stock: '', category: ''
+    name: '', description: '', price: '', stock: '', category: '',
+    image: null as File | null // Ditambahkan tampungan file gambar edit
   });
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null); // Preview gambar edit
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -39,11 +46,21 @@ export default function AdminProductsPage() {
 
   useEffect(() => { fetchProducts(); }, []);
 
+  // Handler file untuk form Tambah
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFormData({ ...formData, image: file });
       setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  // Handler file untuk form Edit
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setEditFormData({ ...editFormData, image: file });
+      setEditImagePreview(URL.createObjectURL(file));
     }
   };
 
@@ -76,24 +93,47 @@ export default function AdminProductsPage() {
       price: String(product.price),
       stock: String(product.stock),
       category: product.category || '',
+      image: null, // Default null jika tidak ingin ganti gambar
     });
+
+    // Set preview awal menggunakan gambar produk yang sudah ada di database saat ini
+    if (product.image) {
+      const initialPreview = product.image.startsWith('http') 
+        ? product.image 
+        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${product.image}`;
+      setEditImagePreview(initialPreview);
+    } else {
+      setEditImagePreview(null);
+    }
+    
     setIsEditModalOpen(true);
   };
 
   const handleEditProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // PERBAIKAN UTAMA: Menggunakan FormData agar file image bisa terkirim ke backend NestJS
+    const data = new FormData();
+    data.append('name', editFormData.name);
+    data.append('description', editFormData.description);
+    data.append('price', editFormData.price);
+    data.append('stock', editFormData.stock);
+    data.append('category', editFormData.category);
+    
+    // Jika user memilih file gambar baru, masukkan ke dalam FormData
+    if (editFormData.image) {
+      data.append('image', editFormData.image);
+    }
+
     try {
-      await api.put(`/products/${editingProduct.id}`, {
-        name: editFormData.name,
-        description: editFormData.description,
-        price: Number(editFormData.price),
-        stock: Number(editFormData.stock),
-        category: editFormData.category,
+      await api.put(`/products/${editingProduct.id}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       toast.success('Produk berhasil diperbarui');
       setIsEditModalOpen(false);
       fetchProducts();
     } catch (error) {
+      console.error(error);
       toast.error('Gagal memperbarui produk');
     }
   };
@@ -317,6 +357,31 @@ export default function AdminProductsPage() {
                   className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
                   value={editFormData.category} onChange={e => setEditFormData({ ...editFormData, category: e.target.value })} />
               </div>
+              
+              {/* INPUT FILE / SELEKSI GAMBAR BARU PADA MODAL EDIT */}
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5">UBAH FOTO PRODUK (OPSIONAL)</label>
+                <div onClick={() => editFileInputRef.current?.click()}
+                  className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center cursor-pointer hover:bg-slate-50 transition flex flex-col items-center justify-center min-h-[110px]">
+                  <input type="file" accept="image/*" className="hidden"
+                    ref={editFileInputRef} onChange={handleEditFileChange} />
+                  {editImagePreview ? (
+                    <div className="relative w-24 h-24 rounded-lg overflow-hidden border">
+                      <img src={editImagePreview} alt="Preview Edit" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition flex items-center justify-center text-white text-[10px] font-bold">
+                        GANTI GAMBAR
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="text-slate-400 mb-1" size={24} />
+                      <span className="text-xs font-semibold text-slate-600">Klik untuk mengganti gambar</span>
+                      <span className="text-[10px] text-slate-400 mt-0.5">Format PNG, JPG atau JPEG up to 2MB</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-4 border-t border-slate-100">
                 <button type="button" onClick={() => setIsEditModalOpen(false)}
                   className="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-200 transition">
