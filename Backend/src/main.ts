@@ -18,7 +18,7 @@ app.enableCors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://brunomart.vercel.app', // ← ganti dengan URL Vercel kamu yang asli
+    'https://bruno-mart.vercel.app',  // ← ganti dengan URL Vercel kamu yang asli
   ],
   credentials: true,
 });
