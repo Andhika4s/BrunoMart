@@ -12,8 +12,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
-const BACKEND_STATIC_URL = 'http://localhost:5000';
-
+const BACKEND_STATIC_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 interface CartItem {
   id: string; 
   productId: string;
