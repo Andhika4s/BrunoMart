@@ -3,7 +3,7 @@ import { getCookie } from 'cookies-next'; // 👈 1. Impor getCookie dari cookie
 
 export const api = axios.create({
   // Arahkan langsung ke port backend NestJS dan sertakan prefix '/api'
-  baseURL: 'http://localhost:5000/api', 
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
   withCredentials: true, // Tetap pertahankan ini jika backend menggunakannya
   headers: {
     'Content-Type': 'application/json',
