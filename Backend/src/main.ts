@@ -13,12 +13,21 @@ async function bootstrap() {
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
   // PERBAIKAN CORS: Masukkan origin domain Vercel Anda secara presisi
+// PERBAIKAN CORS: Izinkan domain utama dan seluruh subdomain preview Vercel Anda
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'https://bruno-mart.vercel.app', // Domain utama Vercel Anda
-    ],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'https://bruno-mart.vercel.app',
+      ];
+      
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Blocked by CORS policy'));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
