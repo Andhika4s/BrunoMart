@@ -84,7 +84,7 @@ export default function AdminProductsPage() {
   const handleDelete = async (id: number) => {
     if (!confirm('Yakin ingin menghapus produk ini?')) return;
     try {
-      await api.delete(`/info?id=${id}`);
+      await api.delete(`/products/${id}`);
       toast.success('Produk dihapus');
       fetchProducts();
     } catch (error) {
@@ -140,7 +140,7 @@ export default function AdminProductsPage() {
                     <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden border border-slate-200">
                       {p.image ? (
                         <img 
-                          src={p.image.startsWith('http') ? p.image : `http://localhost:5000/${p.image}`} 
+                          src={p.image.startsWith('http') ? p.image : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${p.image}`} 
                           alt={p.name} 
                           className="w-full h-full object-cover"
                         />
