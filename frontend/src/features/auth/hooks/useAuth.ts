@@ -3,21 +3,12 @@ import { useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { LoginInput, RegisterInput } from '../types/auth.schema';
 import { setCookie, deleteCookie, getCookie } from 'cookies-next';
-import { AxiosError } from 'axios'; // PERBAIKAN: Import AxiosError untuk membaca detail message dari NestJS
 
-// ==========================================
-// 1. INTERFACE & TYPES DEFINITION
-// ==========================================
 interface User {
   id: string;
   email: string;
   name: string;
   role: 'USER' | 'ADMIN';
-}
-
-interface AuthResponse {
-  user: User;
-  token: string;
 }
 
 interface AuthState {
@@ -29,24 +20,15 @@ interface AuthState {
 
 const getInitialUser = (): User | null => {
   if (typeof window === 'undefined') return null;
-  
   const token = getCookie('token');
   const role = getCookie('role') as 'USER' | 'ADMIN' | undefined;
   
   if (token && role) {
-    return {
-      id: '', 
-      email: '',
-      name: 'User', 
-      role: role,
-    };
+    return { id: '', email: '', name: 'User', role: role };
   }
   return null;
 };
 
-// ==========================================
-// 2. ZUSTAND GLOBAL STORE
-// ==========================================
 export const useAuthStore = create<AuthState>((set) => ({
   user: getInitialUser(),
   setUser: (user) => set({ user }),
@@ -62,7 +44,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 
 // ==========================================
-// 3. REACT QUERY MUTATIONS (API Handlers)
+// REACT QUERY MUTATIONS
 // ==========================================
 
 // --- Hook untuk Sign In (Login) ---
@@ -85,9 +67,10 @@ export function useLoginMutation() {
         role: userRole
       };
 
-      // Kunci logika penolakan token murni hanya saat siklus login berjalan
+      // PERBAIKAN: Jangan pakai "throw new Error" murni di sini agar tidak bocor jadi global exception
       if (!token) {
-        throw new Error('Token tidak ditemukan dari response server backend!');
+        console.error('Token tidak ditemukan dari response login server.');
+        return; 
       }
 
       setCookie('token', token, { maxAge: 60 * 60 * 24 });
@@ -98,21 +81,15 @@ export function useLoginMutation() {
 }
 
 // --- Hook untuk Sign Up (Register) ---
-// PERBAIKAN: Isolasi mutasi register dan pastikan mengembalikan error Axios secara transparan
 export function useRegisterMutation() {
   return useMutation({
     mutationFn: async (data: RegisterInput) => {
-      try {
-        const res = await api.post('/auth/register', {
-          name: data.name,
-          email: data.email,
-          password: data.password
-        });
-        return res.data;
-      } catch (error: any) {
-        // Jika ada error dari Axios (seperti 409), teruskan objek errornya agar dibaca oleh onError di RegisterPage
-        throw error;
-      }
+      const res = await api.post('/auth/register', {
+        name: data.name,
+        email: data.email,
+        password: data.password
+      });
+      return res.data;
     },
   });
 }
