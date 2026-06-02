@@ -265,7 +265,6 @@ export default function ProfilePage() {
                   {/* DANGER ZONE: Fitur Hapus Akun Sendiri */}
         {!isEditing && (
           <div className="pt-4 border-t border-red-100">
-            <p className="text-[10px] uppercase font-bold text-red-500 tracking-wider mb-2">Zona Bahaya</p>
             <Button
               variant="outline" // PERBAIKAN: Diubah ke variant yang valid (outline)
               onClick={handleDeleteAccount}
