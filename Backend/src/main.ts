@@ -14,13 +14,14 @@ async function bootstrap() {
   // URL Akses: http://localhost:5000/uploads/nama-foto.jpg
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
-  // 2. AKTIFKAN CORS (Izinkan port frontend Next.js milikmu)
-  // Karena backend pindah ke 5000, port 3000 sekarang murni aman dipakai frontend Next.js
-  app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'], 
-    credentials: true,
-  });
-
+ app.enableCors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://your-app.vercel.app', // ← ganti dengan URL Vercel kamu
+  ],
+  credentials: true,
+});
   // 3. GLOBAL VALIDATION PIPE
   app.useGlobalPipes(
     new ValidationPipe({
