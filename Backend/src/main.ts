@@ -14,11 +14,11 @@ async function bootstrap() {
   // URL Akses: http://localhost:5000/uploads/nama-foto.jpg
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
- app.enableCors({
+app.enableCors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://your-app.vercel.app', // ← ganti dengan URL Vercel kamu
+    'https://brunomart.vercel.app', // ← ganti dengan URL Vercel kamu yang asli
   ],
   credentials: true,
 });
