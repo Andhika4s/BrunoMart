@@ -10,18 +10,17 @@ export default function AdminProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // State Form sesuai dengan key di Postman
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    stock: '',
-    category: '',
+    name: '', description: '', price: '', stock: '', category: '',
     image: null as File | null
   });
-  
-  // State untuk melihat preview gambar yang akan diupload
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '', description: '', price: '', stock: '', category: ''
+  });
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -38,46 +37,64 @@ export default function AdminProductsPage() {
     }
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useEffect(() => { fetchProducts(); }, []);
 
-  // Handle perubahan file gambar
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFormData({ ...formData, image: file });
-      setImagePreview(URL.createObjectURL(file)); // Membuat URL lokal untuk preview
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  // Submit Form menggunakan FormData (Multipart/Form-Data) seperti Postman
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const data = new FormData();
     data.append('name', formData.name);
     data.append('description', formData.description);
     data.append('price', formData.price);
     data.append('stock', formData.stock);
     data.append('category', formData.category);
-    if (formData.image) {
-      data.append('image', formData.image);
-    }
-
+    if (formData.image) data.append('image', formData.image);
     try {
-      await api.post('/products', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await api.post('/products', data, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast.success('Produk berhasil ditambahkan');
       setIsModalOpen(false);
       resetForm();
-      fetchProducts(); // Refresh list tabel
+      fetchProducts();
     } catch (error) {
       console.error(error);
       toast.error('Gagal menambahkan produk');
+    }
+  };
+
+  const handleOpenEdit = (product: any) => {
+    setEditingProduct(product);
+    setEditFormData({
+      name: product.name,
+      description: product.description || '',
+      price: String(product.price),
+      stock: String(product.stock),
+      category: product.category || '',
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await api.put(`/products/${editingProduct.id}`, {
+        name: editFormData.name,
+        description: editFormData.description,
+        price: Number(editFormData.price),
+        stock: Number(editFormData.stock),
+        category: editFormData.category,
+      });
+      toast.success('Produk berhasil diperbarui');
+      setIsEditModalOpen(false);
+      fetchProducts();
+    } catch (error) {
+      toast.error('Gagal memperbarui produk');
     }
   };
 
@@ -99,22 +116,17 @@ export default function AdminProductsPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      {/* Header Utama */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-3xl font-black text-slate-800">Manajemen Produk</h2>
           <p className="text-slate-500 text-sm mt-1">Kelola data komoditas dan stok barang BrunoMart</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition shadow-sm shadow-blue-200"
-        >
-          <Plus size={18} />
-          Tambah Produk
+        <button onClick={() => setIsModalOpen(true)}
+          className="bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition shadow-sm shadow-blue-200">
+          <Plus size={18} /> Tambah Produk
         </button>
       </div>
-      
-      {/* Tabel Utama */}
+
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-slate-50 border-b border-slate-200">
@@ -139,11 +151,9 @@ export default function AdminProductsPage() {
                   <td className="p-4 flex items-center gap-3">
                     <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden border border-slate-200">
                       {p.image ? (
-                        <img 
-                          src={p.image.startsWith('http') ? p.image : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${p.image}`} 
-                          alt={p.name} 
-                          className="w-full h-full object-cover"
-                        />
+                        <img
+                          src={p.image.startsWith('http') ? p.image : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${p.image}`}
+                          alt={p.name} className="w-full h-full object-cover" />
                       ) : (
                         <Package size={20} className="text-slate-400" />
                       )}
@@ -165,7 +175,7 @@ export default function AdminProductsPage() {
                     </span>
                   </td>
                   <td className="p-4 text-right">
-                    <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg mr-2"><Edit2 size={16} /></button>
+                    <button onClick={() => handleOpenEdit(p)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg mr-2"><Edit2 size={16} /></button>
                     <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:bg-red-50 p-2 rounded-lg"><Trash2 size={16} /></button>
                   </td>
                 </tr>
@@ -179,83 +189,59 @@ export default function AdminProductsPage() {
         </table>
       </div>
 
-      {/* Modal Popup Form (Mendukung Form-Data & Upload File) */}
+      {/* Modal TAMBAH */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-            {/* Modal Header */}
             <div className="p-6 border-b flex justify-between items-center bg-slate-50">
               <div>
                 <h3 className="font-black text-xl text-slate-800">Tambah Produk</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Isi detail data produk baru dengan format multipart</p>
+                <p className="text-xs text-slate-400 mt-0.5">Isi detail data produk baru</p>
               </div>
-              <button 
-                onClick={() => { setIsModalOpen(false); resetForm(); }}
-                className="text-slate-400 hover:bg-slate-200 p-1.5 rounded-xl transition"
-              >
+              <button onClick={() => { setIsModalOpen(false); resetForm(); }}
+                className="text-slate-400 hover:bg-slate-200 p-1.5 rounded-xl transition">
                 <X size={20} />
               </button>
             </div>
-
-            {/* Modal Body / Form */}
             <form onSubmit={handleAddProduct} className="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1.5">NAMA PRODUK</label>
-                <input
-                  type="text" required placeholder="Sesuai nama komoditas"
+                <input type="text" required placeholder="Sesuai nama komoditas"
                   className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
-                  value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
-                />
+                  value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
               </div>
-
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1.5">DESKRIPSI</label>
-                <textarea
-                  placeholder="Detail spesifikasi barang" rows={2}
+                <textarea placeholder="Detail spesifikasi barang" rows={2}
                   className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
-                  value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })}
-                />
+                  value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1.5">HARGA (RP)</label>
-                  <input
-                    type="number" required placeholder="350000"
+                  <input type="number" required placeholder="350000"
                     className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
-                    value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })}
-                  />
+                    value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1.5">STOK AWAL</label>
-                  <input
-                    type="number" required placeholder="50"
+                  <input type="number" required placeholder="50"
                     className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
-                    value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })}
-                  />
+                    value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })} />
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1.5">KATEGORI</label>
-                <input
-                  type="text" required placeholder="pakaian / makanan / elektronik"
+                <input type="text" required placeholder="pakaian / makanan / elektronik"
                   className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
-                  value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}
-                />
+                  value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} />
               </div>
-
-              {/* Area Upload Gambar (File) */}
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1.5">FOTO PRODUK</label>
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center cursor-pointer hover:bg-slate-50 transition flex flex-col items-center justify-center min-h-[110px]"
-                >
-                  <input 
-                    type="file" accept="image/*" className="hidden" 
-                    ref={fileInputRef} onChange={handleFileChange} 
-                  />
+                <div onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center cursor-pointer hover:bg-slate-50 transition flex flex-col items-center justify-center min-h-[110px]">
+                  <input type="file" accept="image/*" className="hidden"
+                    ref={fileInputRef} onChange={handleFileChange} />
                   {imagePreview ? (
                     <div className="relative w-24 h-24 rounded-lg overflow-hidden border">
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
@@ -269,20 +255,76 @@ export default function AdminProductsPage() {
                   )}
                 </div>
               </div>
-
-              {/* Modal Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button" onClick={() => { setIsModalOpen(false); resetForm(); }}
-                  className="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-200 transition"
-                >
+                <button type="button" onClick={() => { setIsModalOpen(false); resetForm(); }}
+                  className="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-200 transition">
                   Batal
                 </button>
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-md shadow-blue-100"
-                >
+                <button type="submit"
+                  className="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-md shadow-blue-100">
                   Simpan ke Database
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal EDIT */}
+      {isEditModalOpen && editingProduct && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+              <div>
+                <h3 className="font-black text-xl text-slate-800">Edit Produk</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Ubah detail produk</p>
+              </div>
+              <button onClick={() => setIsEditModalOpen(false)}
+                className="text-slate-400 hover:bg-slate-200 p-1.5 rounded-xl transition">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleEditProduct} className="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5">NAMA PRODUK</label>
+                <input type="text" required
+                  className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
+                  value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5">DESKRIPSI</label>
+                <textarea rows={2}
+                  className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
+                  value={editFormData.description} onChange={e => setEditFormData({ ...editFormData, description: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1.5">HARGA (RP)</label>
+                  <input type="number" required
+                    className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
+                    value={editFormData.price} onChange={e => setEditFormData({ ...editFormData, price: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1.5">STOK</label>
+                  <input type="number" required
+                    className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
+                    value={editFormData.stock} onChange={e => setEditFormData({ ...editFormData, stock: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5">KATEGORI</label>
+                <input type="text" required
+                  className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-200"
+                  value={editFormData.category} onChange={e => setEditFormData({ ...editFormData, category: e.target.value })} />
+              </div>
+              <div className="flex gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onClick={() => setIsEditModalOpen(false)}
+                  className="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-200 transition">
+                  Batal
+                </button>
+                <button type="submit"
+                  className="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">
+                  Simpan Perubahan
                 </button>
               </div>
             </form>
