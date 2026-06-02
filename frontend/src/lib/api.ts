@@ -18,7 +18,9 @@ export const api = axios.create({
   },
 });
 
-// Interceptor request
+// ==========================================
+// INTERCEPTOR REQUEST
+// ==========================================
 api.interceptors.request.use(
   (config) => {
     // Jalankan getCookie HANYA jika berada di browser (client-side)
@@ -31,6 +33,32 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// ==========================================
+// INTERCEPTOR RESPONSE (PERBAIKAN SINKRONISASI TOKEN)
+// ==========================================
+api.interceptors.response.use(
+  (response) => {
+    // Ambil detail URL endpoint yang baru saja diakses oleh request ini
+    const requestUrl = response.config.url || '';
+
+    // KONDISI KHUSUS: Hanya periksa token secara ketat jika endpointnya adalah LOGIN
+    if (requestUrl.includes('/auth/login')) {
+      const token = response.data.token || response.data.access_token || response.data.accessToken;
+      
+      if (!token) {
+        throw new Error('Token tidak ditemukan dari response server backend!');
+      }
+    }
+
+    // Jika endpoint lain (seperti /auth/register, /products, dll), loloskan secara normal
+    return response;
+  },
+  (error) => {
+    // Teruskan error response (seperti 400, 401, 409) agar dibaca langsung oleh onError di useMutation Anda
     return Promise.reject(error);
   }
 );
