@@ -13,19 +13,16 @@ import {
 } from 'lucide-react';
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  // Ambil seluruh data pesanan masuk dari pembeli BrunoMart
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      // ADAPTASI DI SINI: Menembak ke '/orders/admin/all' sesuai dengan @Get('admin/all') di OrderController Anda
-      const response = await api.get('/orders/admin/all'); 
-      
-      // Mengambil data dari response structure backend ({ status: 'success', data: [...] })
-      const [orders, setOrders] = useState<any[]>([]);
+      const response = await api.get('/orders/admin/all');
+      const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+      setOrders(data);
     } catch (error) {
       console.error(error);
       toast.error('Gagal mengambil data pesanan pembeli');
@@ -39,15 +36,12 @@ export default function AdminOrdersPage() {
     fetchOrders();
   }, []);
 
-  // Memperbarui status pengiriman/pembayaran pesanan langsung oleh Admin
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
     try {
-      // ADAPTASI DI SINI: Menembak ke `/orders/admin/${orderId}/status` sesuai dengan @Put('admin/:id/status')
       await api.put(`/orders/admin/${orderId}/status`, { status: newStatus });
-      
       toast.success(`Status pesanan berhasil diperbarui menjadi ${newStatus}`);
-      fetchOrders(); // Refresh data agar status di UI sinkron dengan database
+      fetchOrders();
     } catch (error) {
       console.error(error);
       toast.error('Gagal memperbarui status transaksi');
@@ -56,37 +50,26 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // Helper styling warna badge status transaksi
   const getStatusBadge = (status: string) => {
     switch (status?.toUpperCase()) {
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-700 border-green-200';
-      case 'DELIVERED':
-        return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'PENDING':
-        return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-700 border-red-200';
-      default:
-        return 'bg-slate-100 text-slate-700 border-slate-200';
+      case 'COMPLETED': return 'bg-green-100 text-green-700 border-green-200';
+      case 'DELIVERED': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'PENDING': return 'bg-amber-100 text-amber-700 border-amber-200';
+      case 'CANCELLED': return 'bg-red-100 text-red-700 border-red-200';
+      default: return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 p-8">
       <div className="max-w-7xl mx-auto">
-        
-        {/* Header Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-black text-slate-800 tracking-tight">
-            Manajemen Pesanan
-          </h2>
+          <h2 className="text-3xl font-black text-slate-800 tracking-tight">Manajemen Pesanan</h2>
           <p className="text-slate-500 text-sm mt-1">
             Verifikasi pesanan, pantau alur pengiriman, dan perbarui status transaksi BrunoMart
           </p>
         </div>
 
-        {/* Konten Utama */}
         {isLoading ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-20 text-center text-slate-400 shadow-sm">
             <Loader2 className="animate-spin mx-auto mb-3 text-blue-600" size={32} />
@@ -95,11 +78,8 @@ export default function AdminOrdersPage() {
         ) : orders.length > 0 ? (
           <div className="space-y-6">
             {orders.map((order: any) => (
-              <div 
-                key={order.id} 
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:border-slate-300 transition duration-150"
-              >
-                {/* Atas Card: Informasi Metadata Invoice */}
+              <div key={order.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:border-slate-300 transition duration-150">
+                
                 <div className="bg-slate-50 border-b border-slate-200 p-4 flex flex-wrap items-center justify-between gap-4 text-sm">
                   <div className="flex flex-wrap items-center gap-4 text-slate-600">
                     <div>
@@ -118,12 +98,10 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  {/* Pengubah Status Transaksi (Verify Dropdown) */}
                   <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 text-xs font-black border rounded-lg tracking-wide ${getStatusBadge(order.status)}`}>
                       {order.status || 'PENDING'}
                     </span>
-                    
                     <select
                       disabled={updatingId === order.id}
                       value={order.status || 'PENDING'}
@@ -138,10 +116,7 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
-                {/* Tengah Card: Rincian Barang Belanjaan & Informasi Logistik */}
                 <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 text-sm">
-                  
-                  {/* Daftar Item Belanjaan */}
                   <div className="lg:col-span-2 space-y-4">
                     <h4 className="font-bold text-slate-400 text-xs tracking-wider mb-2">DAFTAR BARANG BELANJA</h4>
                     {order.items && order.items.length > 0 ? (
@@ -149,9 +124,9 @@ export default function AdminOrdersPage() {
                         <div key={item.id} className="flex items-center gap-4 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
                           <div className="w-12 h-12 bg-slate-200 rounded-lg flex items-center justify-center overflow-hidden border">
                             {item.product?.image ? (
-                              <img 
-                                src={item.product.image.startsWith('http') ? item.product.image : `http://localhost:5000/${item.product.image}`} 
-                                alt={item.product?.name} 
+                              <img
+                                src={item.product.image.startsWith('http') ? item.product.image : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${item.product.image}`}
+                                alt={item.product?.name}
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -172,7 +147,6 @@ export default function AdminOrdersPage() {
                     )}
                   </div>
 
-                  {/* Profil Informasi Pengiriman */}
                   <div className="bg-slate-50/60 p-5 rounded-2xl border border-slate-200/60 space-y-4">
                     <div>
                       <h4 className="font-bold text-slate-400 text-xs tracking-wider mb-2 flex items-center gap-1.5">
@@ -181,14 +155,12 @@ export default function AdminOrdersPage() {
                       <p className="font-bold text-slate-800">{order.user?.name || 'Pelanggan Anonim'}</p>
                       <p className="text-xs text-slate-400 mt-0.5">{order.user?.email || '-'}</p>
                     </div>
-
                     <div className="border-t border-slate-200 pt-3">
                       <h4 className="font-bold text-slate-400 text-xs tracking-wider mb-1.5 flex items-center gap-1.5">
                         <MapPin size={13} /> ALAMAT TUJUAN
                       </h4>
                       <p className="text-xs text-slate-600 font-medium leading-relaxed">{order.address || 'Ambil di Toko / Belum Diisi'}</p>
                     </div>
-
                     <div className="border-t border-slate-200 pt-3 flex items-center justify-between">
                       <div>
                         <h4 className="font-bold text-slate-400 text-xs tracking-wider flex items-center gap-1.5">
@@ -206,7 +178,6 @@ export default function AdminOrdersPage() {
                       </div>
                     </div>
                   </div>
-
                 </div>
 
               </div>
@@ -218,7 +189,6 @@ export default function AdminOrdersPage() {
             Belum ada pesanan masuk dari pembeli BrunoMart untuk diproses.
           </div>
         )}
-
       </div>
     </div>
   );
