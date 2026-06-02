@@ -2,15 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import * as express from 'express'; 
-import { join } from 'path';
+const path = require('path');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   app.setGlobalPrefix('api');
 
-  // JALUR STATIC ASSET
-  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
+  
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
   // FIX CORS PRODUKSI (Menggunakan Array Matcher & Wildcard Subdomain)
   app.enableCors({
