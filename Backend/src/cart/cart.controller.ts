@@ -15,7 +15,19 @@ export class CartController {
     const data = await this.cartService.getCart(user.id);
     return { status: 'success', data };
   }
-
+  // TAMBAHKAN HANDLER INI DI DALAM CARTCONTROLLER ANDA
+  @Get(':itemId')
+  async getCartItemById(
+    @Req() req: express.Request, 
+    @Param('itemId') itemId: string
+  ) {
+    const user = req.user as { id: string };
+    // Pastikan service Anda memiliki method pencarian item jika dibutuhkan,
+    // atau jika frontend sebenarnya berniat mengambil seluruh isi keranjang tapi salah kirim param, 
+    // Anda bisa mengarahkannya kembali ke getCart(user.id) secara aman.
+    const data = await this.cartService.getCart(user.id); 
+    return { status: 'success', data };
+  }
 
   @Post()
   async addItemToCart(@Req() req: express.Request, @Body() addToCartDto: AddToCartDto) {

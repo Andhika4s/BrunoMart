@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, RegisterInput } from '@/features/auth/types/auth.schema';
 import { useRegisterMutation } from '@/features/auth/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import Link from 'next/navigation';
+import Link from 'next/link'; // PERBAIKAN: Import Link wajib dari next/link
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,12 +27,10 @@ export default function RegisterPage() {
   const onSubmit = (data: RegisterInput) => {
     registerUser(data, {
       onSuccess: () => {
-        // Jika registrasi sukses, arahkan pengguna langsung ke halaman login dengan pesan sukses
         alert('Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.');
         router.push('/auth/login');
       },
       onError: (error: any) => {
-        // Menampilkan pesan error dari backend jika ada (misal: email sudah terdaftar)
         const message = error?.response?.data?.message || 'Terjadi kesalahan saat registrasi.';
         alert(message);
       }
@@ -86,12 +84,12 @@ export default function RegisterPage() {
               {isPending ? 'Mendaftar...' : 'Daftar Sekarang'}
             </Button>
 
-            {/* Navigasi Ke Halaman Login */}
+            {/* Navigasi Menggunakan Komponen Link Yang Benar */}
             <div className="text-center text-sm text-gray-600 pt-2">
               Sudah punya akun?{' '}
-              <a href="/auth/login" className="font-semibold text-blue-600 hover:underline">
+              <Link href="/auth/login" className="font-semibold text-blue-600 hover:underline">
                 Masuk di sini
-              </a>
+              </Link>
             </div>
           </form>
         </CardContent>
