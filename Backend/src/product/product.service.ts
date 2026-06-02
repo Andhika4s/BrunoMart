@@ -54,16 +54,30 @@ export class ProductService {
     });
   }
 
-  // 💡 PERBAIKAN DI METHOD UPDATE (Agar jika admin edit barang tanpa ganti foto, fotonya tidak hilang)
-  async update(id: string, updateProductDto: UpdateProductDto) {
-    await this.findOne(id); 
-    return this.prisma.product.update({
-      where: { id },
-      data: {
-        ...updateProductDto,
-      },
-    });
+ async update(id: string, updateProductDto: UpdateProductDto, imageUrl?: string) {
+  const existingProduct = await this.findOne(id); 
+
+  const updateData: any = {
+    name: updateProductDto.name ?? existingProduct.name,
+    description: updateProductDto.description ?? existingProduct.description,
+    category: updateProductDto.category ?? existingProduct.category,
+  };
+
+  if (updateProductDto.price !== undefined && updateProductDto.price !== null) {
+    updateData.price = Number(updateProductDto.price);
   }
+  if (updateProductDto.stock !== undefined && updateProductDto.stock !== null) {
+    updateData.stock = Number(updateProductDto.stock);
+  }
+  if (imageUrl) {
+    updateData.image = imageUrl;
+  }
+
+  return this.prisma.product.update({
+    where: { id },
+    data: updateData,
+  });
+}
 
   async remove(id: string) {
     await this.findOne(id);
