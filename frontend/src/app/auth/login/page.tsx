@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Store, ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/features/auth/hooks/useAuth';
-import { setCookie } from 'cookies-next';
 import { api } from '@/lib/api'; // 💡 Gunakan instance API Axios milikmu yang sudah mengarah ke port 5000
+import { setCookie } from 'cookies-next';
+import { ArrowRight, Loader2, Store } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 export default function AuthPage() {
@@ -44,24 +44,28 @@ export default function AuthPage() {
         role: userRole
       };
 
-            if (token) {
-        setCookie('token', token, { maxAge: 60 * 60 * 24, path: '/' });
-        setCookie('role', userRole, { maxAge: 60 * 60 * 24, path: '/' });
-        
-        setUser(userData);
-        toast.success(isSignUp ? 'Registrasi berhasil!' : 'Selamat datang kembali!');
-        
-        // GANTI BAGIAN INI:
-        if (userRole === 'ADMIN') {
-          router.push('/admin'); // Arahkan ke rute admin sesuai middleware
-        } else {
-          router.push('/products');
-        }
-        router.refresh();
+        if (token) {
+          setCookie('token', token, { maxAge: 60 * 60 * 24, path: '/' });
+          setCookie('role', userRole, { maxAge: 60 * 60 * 24, path: '/' });
+          setUser(userData);
+          toast.success(isSignUp ? 'Registrasi berhasil!' : 'Selamat datang kembali!');
+          
+          if (userRole === 'ADMIN') {
+            router.push('/admin');
+          } else {
+            router.push('/products');
+          }
+          router.refresh();
 
-      } else {
-        alert('Token tidak ditemukan dari response server backend!');
-      }
+        } else if (isSignUp) {
+          // Register tidak return token, itu normal
+          toast.success('Registrasi berhasil! Silakan masuk.');
+          setIsSignUp(false); // Switch ke form login
+          
+        } else {
+          // Login tapi tidak ada token — ini baru error
+          alert('Token tidak ditemukan dari response server backend!');
+        }
 
     } catch (error: any) {
       console.error('Error Auth:', error);
