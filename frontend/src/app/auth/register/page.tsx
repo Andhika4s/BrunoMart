@@ -24,13 +24,17 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = (data: RegisterInput) => {
+const onSubmit = (data: RegisterInput) => {
+    // PENGAMAN UTAMA: Jika status sedang pending, langsung batalkan request tambahan
+    if (isPending) return;
+
     registerUser(data, {
       onSuccess: () => {
         alert('Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.');
         router.push('/auth/login');
       },
       onError: (error: any) => {
+        // Hanya tampilkan error jika ini bukan akibat double klik ter-cache
         const message = error?.response?.data?.message || 'Terjadi kesalahan saat registrasi.';
         alert(message);
       }
