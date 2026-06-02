@@ -12,22 +12,19 @@ async function bootstrap() {
   // JALUR STATIC ASSET
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
-  // FIX CORS PRODUKSI (Menggunakan Array Matcher & Regex untuk Fleksibilitas Tanpa Crash)
+  // FIX CORS PRODUKSI (Menggunakan Array Matcher & Wildcard Subdomain)
   app.enableCors({
     origin: (origin, callback) => {
-      // Jika request dikirim server-to-server (tidak ada header origin) atau localhost, langsung lolos
       if (!origin || origin.startsWith('http://localhost:')) {
         return callback(null, true);
       }
 
-      // Validasi ketat domain Vercel Anda (bruno-mart.vercel.app ATAU subdomain git/preview-nya)
       const isVercelDomain = origin === 'https://bruno-mart.vercel.app' || 
                              origin.endsWith('.vercel.app');
 
       if (isVercelDomain) {
         callback(null, true);
       } else {
-        // Alih-alih melempar error object yang bikin crash preflight, berikan false secara aman
         callback(null, false);
       }
     },
@@ -44,9 +41,14 @@ async function bootstrap() {
     }),
   );
 
-  // Menggunakan env PORT bawaan Railway jika tersedia, atau fallback ke 5000
-  await app.listen(process.env.PORT || 5000);
-  console.log(`[BrunoMart Backend] Berhasil berjalan.`);
+  // --- PERBAIKAN UTAMA UNTUK RAILWAY (PORT & BINDING HOST) ---
+  // Ambil PORT dari environment Railway, pastikan dikonversi ke integer
+  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
+  
+  // Wajib tambahkan '0.0.0.0' agar kontainer mau menerima request dari proxy luar Railway
+  await app.listen(port, '0.0.0.0');
+  
+  console.log(`[BrunoMart Backend] Berhasil berjalan di port: ${port} dengan host 0.0.0.0`);
 }
 
 bootstrap();
