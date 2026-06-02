@@ -14,20 +14,20 @@ export default function Sidebar() {
     { label: 'Pesanan', path: '/admin/orders', icon: <ShoppingCart size={18} /> },
   ];
 
-  const handleLogout = () => {
-    if (confirm('Apakah Anda yakin ingin keluar dari BrunoMart?')) {
-      // 1. Hapus token atau session auth yang kamu gunakan (contoh: di localStorage/cookies)
-      localStorage.removeItem('token'); 
-      // document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // jika pakai cookies
+const handleLogout = () => {
+  if (confirm('Apakah Anda yakin ingin keluar dari BrunoMart?')) {
+    // 1. Bersihkan token dan role dari COOKIES
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
-      // 2. Berikan notifikasi sukses
-      toast.success('Berhasil keluar dari akun');
+    // Bersihkan juga dari localStorage jika ada
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
 
-      // 3. Kembalikan ke halaman login
-      router.push('/login');
-    }
-  };
-
+    toast.success('Berhasil keluar dari akun');
+    router.push('/'); 
+  }
+};
   return (
     <aside className="w-64 bg-white border-r shadow-sm h-screen sticky top-0 flex flex-col justify-between">
       {/* Bagian Atas: Logo & Menu Navigasi */}

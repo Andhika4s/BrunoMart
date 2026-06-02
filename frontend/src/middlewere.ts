@@ -7,13 +7,14 @@ export function middleware(request: NextRequest) {
   const role = request.cookies.get('role')?.value;
   const { pathname } = request.nextUrl;
 
-  // JAGA URL: Jika ada yang tembak URL diawali /admin
-  if (pathname.startsWith('/admin')) {
-    // Jika tidak punya token ATAU role-nya bukan ADMIN, tendang langsung ke login
-    if (!token || role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/auth/login', request.url));
-    }
+  // Di dalam middleware.ts kamu
+if (pathname.startsWith('/admin')) {
+  if (!token || role !== 'ADMIN') {
+    // Pastikan '/auth/login' ini memang ada folders-nya di app/auth/login/page.tsx
+    // Jika tidak ada dan login kamu menyatu di halaman utama, ganti menjadi URL('/', request.url)
+    return NextResponse.redirect(new URL('/auth/login', request.url)); 
   }
+}
 
   // JAGA URL: Jika ada yang tembak URL proteksi umum tapi belum login
   const protectedRoutes = ['/cart', '/orders', '/products'];
