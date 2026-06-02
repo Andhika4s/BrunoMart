@@ -50,16 +50,16 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status?.toUpperCase()) {
-      case 'COMPLETED': return 'bg-green-100 text-green-700 border-green-200';
-      case 'DELIVERED': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'PENDING': return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'CANCELLED': return 'bg-red-100 text-red-700 border-red-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
-    }
-  };
-
+const getStatusBadge = (status: string) => {
+  switch (status?.toUpperCase()) {
+    case 'COMPLETED': return 'bg-green-100 text-green-700 border-green-200';
+    case 'SHIPPED': return 'bg-blue-100 text-blue-700 border-blue-200';
+    case 'PAID': return 'bg-purple-100 text-purple-700 border-purple-200';
+    case 'PENDING': return 'bg-amber-100 text-amber-700 border-amber-200';
+    case 'CANCELLED': return 'bg-red-100 text-red-700 border-red-200';
+    default: return 'bg-slate-100 text-slate-700 border-slate-200';
+  }
+};
   return (
     <div className="min-h-screen bg-slate-50 p-8">
       <div className="max-w-7xl mx-auto">
@@ -102,14 +102,15 @@ export default function AdminOrdersPage() {
                     <span className={`px-3 py-1 text-xs font-black border rounded-lg tracking-wide ${getStatusBadge(order.status)}`}>
                       {order.status || 'PENDING'}
                     </span>
-                    <select
+                  <select
                       disabled={updatingId === order.id}
                       value={order.status || 'PENDING'}
                       onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
                       className="bg-white border border-slate-200 rounded-xl text-xs font-bold p-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition shadow-sm cursor-pointer"
                     >
                       <option value="PENDING">⏱️ PENDING</option>
-                      <option value="DELIVERED">🚚 DELIVERED</option>
+                      <option value="PAID">💳 PAID</option>
+                      <option value="SHIPPED">🚚 SHIPPED</option>
                       <option value="COMPLETED">✅ COMPLETED</option>
                       <option value="CANCELLED">❌ CANCELLED</option>
                     </select>
