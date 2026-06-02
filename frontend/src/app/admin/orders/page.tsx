@@ -9,13 +9,16 @@ import {
   Calendar, 
   User, 
   MapPin, 
-  CreditCard 
+  CreditCard,
+  Printer // 💡 Tambahkan icon Printer
 } from 'lucide-react';
+import InvoicePrint from '@/components/InvoicePrint'; // 💡 Import komponen Invoice
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null); // 💡 State untuk menyimpan invoice aktif
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -50,16 +53,17 @@ export default function AdminOrdersPage() {
     }
   };
 
-const getStatusBadge = (status: string) => {
-  switch (status?.toUpperCase()) {
-    case 'COMPLETED': return 'bg-green-100 text-green-700 border-green-200';
-    case 'SHIPPED': return 'bg-blue-100 text-blue-700 border-blue-200';
-    case 'PAID': return 'bg-purple-100 text-purple-700 border-purple-200';
-    case 'PENDING': return 'bg-amber-100 text-amber-700 border-amber-200';
-    case 'CANCELLED': return 'bg-red-100 text-red-700 border-red-200';
-    default: return 'bg-slate-100 text-slate-700 border-slate-200';
-  }
-};
+  const getStatusBadge = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'COMPLETED': return 'bg-green-100 text-green-700 border-green-200';
+      case 'SHIPPED': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'PAID': return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'PENDING': return 'bg-amber-100 text-amber-700 border-amber-200';
+      case 'CANCELLED': return 'bg-red-100 text-red-700 border-red-200';
+      default: return 'bg-slate-100 text-slate-700 border-slate-200';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-8">
       <div className="max-w-7xl mx-auto">
@@ -99,10 +103,19 @@ const getStatusBadge = (status: string) => {
                   </div>
 
                   <div className="flex items-center gap-3">
+                    {/* 💡 TOMBOL CETAK NOTA BARU */}
+                    <button
+                      onClick={() => setSelectedOrder(order)}
+                      className="bg-white border border-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition shadow-sm"
+                    >
+                      <Printer size={14} className="text-slate-500" /> Cetak Nota
+                    </button>
+
                     <span className={`px-3 py-1 text-xs font-black border rounded-lg tracking-wide ${getStatusBadge(order.status)}`}>
                       {order.status || 'PENDING'}
                     </span>
-                  <select
+                    
+                    <select
                       disabled={updatingId === order.id}
                       value={order.status || 'PENDING'}
                       onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
@@ -191,6 +204,14 @@ const getStatusBadge = (status: string) => {
           </div>
         )}
       </div>
+
+      {/* 💡 LOGIKA MODAL POP-UP UNTUK PREVIEW INVOICE */}
+      {selectedOrder && (
+        <InvoicePrint 
+          order={selectedOrder} 
+          onClose={() => setSelectedOrder(null)} 
+        />
+      )}
     </div>
   );
 }

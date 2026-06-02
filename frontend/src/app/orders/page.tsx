@@ -1,26 +1,60 @@
 'use client';
 
+import { useState } from 'react'; // 💡 Tambahkan useState untuk kontrol modal
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ClipboardList, Loader2, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ClipboardList, Loader2, ArrowLeft, CheckCircle2, AlertCircle, Printer, Clock, Truck, ShieldAlert } from 'lucide-react'; // 💡 Tambahkan ikon pendukung
 import Link from 'next/link';
+import InvoicePrint from '@/components/InvoicePrint'; // 💡 Import komponen bersama yang sudah diperbaiki
 
 export default function OrdersPage() {
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null); // 💡 State penampung order yang akan diprint
+
   // Ambil data riwayat order dari API backend
-  // Ubah bagian queryFn di OrdersPage
-const { data: ordersData, isLoading, isError } = useQuery<any>({
-  queryKey: ['orders'],
-  queryFn: async () => {
-    // FIX: Menggunakan rute yang benar sesuai Controller
-    const res = await api.get('/orders/my-orders'); 
-    return res.data?.data ? res.data.data : res.data;
-  },
-  retry: 1, 
-});
+  const { data: ordersData, isLoading, isError } = useQuery<any>({
+    queryKey: ['orders'],
+    queryFn: async () => {
+      const res = await api.get('/orders/my-orders'); 
+      return res.data?.data ? res.data.data : res.data;
+    },
+    retry: 1, 
+  });
+
   // Amankan parsing array data orderan
   const orders = Array.isArray(ordersData) ? ordersData : ordersData?.orders || [];
+
+  // 💡 Fungsi Helper dinamis untuk menyesuaikan warna badge & ikon berdasarkan status riwayat asli
+  const getStatusBadge = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'COMPLETED':
+        return {
+          css: 'bg-green-50 border-green-200 text-green-700',
+          icon: <CheckCircle2 className="w-3 h-3" />
+        };
+      case 'SHIPPED':
+        return {
+          css: 'bg-blue-50 border-blue-200 text-blue-700',
+          icon: <Truck className="w-3 h-3" />
+        };
+      case 'PAID':
+        return {
+          css: 'bg-purple-50 border-purple-200 text-purple-700',
+          icon: <CheckCircle2 className="w-3 h-3" />
+        };
+      case 'CANCELLED':
+        return {
+          css: 'bg-red-50 border-red-200 text-red-700',
+          icon: <ShieldAlert className="w-3 h-3" />
+        };
+      default:
+        return {
+          css: 'bg-amber-50 border-amber-200 text-amber-700',
+          icon: <Clock className="w-3 h-3" />
+        };
+    }
+  };
 
   if (isLoading) {
     return (
@@ -31,7 +65,6 @@ const { data: ordersData, isLoading, isError } = useQuery<any>({
     );
   }
 
-  // Tampilan penanganan jika endpoint /orders belum dibuat di backend NestJS Anda
   if (isError) {
     return (
       <div className="min-h-screen bg-slate-50 pt-24 flex items-center justify-center p-4">
@@ -81,48 +114,69 @@ const { data: ordersData, isLoading, isError } = useQuery<any>({
           </div>
         ) : (
           <div className="space-y-4">
-            {orders.map((order: any) => (
-              <Card key={order.id} className="overflow-hidden shadow-sm border-slate-200 bg-white rounded-2xl">
-                <CardHeader className="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-row items-center justify-between flex-wrap gap-2">
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">ID PESANAN</p>
-                    <p className="font-mono text-xs text-slate-700 font-bold">#{order.id.substring(0, 8).toUpperCase()}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold rounded-full">
-                      <CheckCircle2 className="w-3 h-3" />
-                      {order.status || 'SUCCESS'}
-                    </span>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="p-4 space-y-4">
-                  <div className="divide-y divide-slate-100">
-                    {order.items?.map((item: any) => (
-                      <div key={item.id} className="py-3 flex items-center justify-between gap-4 first:pt-0 last:pb-0">
-                        <div className="min-w-0">
-                          <p className="font-bold text-sm text-slate-800 truncate">{item.product?.name || 'Produk BrunoMart'}</p>
-                          <p className="text-xs text-slate-400 mt-0.5">{item.quantity} x Rp {(item.price || item.product?.price || 0).toLocaleString('id-ID')}</p>
+            {orders.map((order: any) => {
+              const badgeStatus = getStatusBadge(order.status);
+              
+              return (
+                <Card key={order.id} className="overflow-hidden shadow-sm border-slate-200 bg-white rounded-2xl">
+                  <CardHeader className="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-row items-center justify-between flex-wrap gap-2">
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">ID PESANAN</p>
+                      <p className="font-mono text-xs text-slate-700 font-bold">#{order.id.substring(0, 8).toUpperCase()}</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      {/* 💡 TOMBOL CETAK NOTA BARU UNTUK USER */}
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-1.5 transition shadow-sm"
+                      >
+                        <Printer size={13} className="text-slate-500" /> Cetak Nota
+                      </button>
+
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 border text-[11px] font-bold rounded-full uppercase tracking-wide ${badgeStatus.css}`}>
+                        {badgeStatus.icon}
+                        {order.status || 'PENDING'}
+                      </span>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-4 space-y-4">
+                    <div className="divide-y divide-slate-100">
+                      {order.items?.map((item: any) => (
+                        <div key={item.id} className="py-3 flex items-center justify-between gap-4 first:pt-0 last:pb-0">
+                          <div className="min-w-0">
+                            <p className="font-bold text-sm text-slate-800 truncate">{item.product?.name || 'Produk BrunoMart'}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">{item.quantity} x Rp {(item.price || item.product?.price || 0).toLocaleString('id-ID')}</p>
+                          </div>
+                          <p className="font-bold text-sm text-slate-700 shrink-0">
+                            Rp {((item.price || item.product?.price || 0) * item.quantity).toLocaleString('id-ID')}
+                          </p>
                         </div>
-                        <p className="font-bold text-sm text-slate-700 shrink-0">
-                          Rp {((item.price || item.product?.price || 0) * item.quantity).toLocaleString('id-ID')}
-                        </p>
-                      </div>
-                    ))}
-                  </div>    
-            <div className="border-t border-slate-100 pt-3 flex items-center justify-between">
-              <p className="text-xs font-bold text-slate-500">Total Pembayaran</p>
-              <p className="font-extrabold text-base text-blue-600">
-                {/* Mengakses field totalAmount dari backend */}
-                Rp {(order.totalAmount || 0).toLocaleString('id-ID')}
-              </p>
-            </div>
-                </CardContent>
-              </Card>
-            ))}
+                      ))}
+                    </div>    
+                    
+                    <div className="border-t border-slate-100 pt-3 flex items-center justify-between">
+                      <p className="text-xs font-bold text-slate-500">Total Pembayaran</p>
+                      <p className="font-extrabold text-base text-blue-600">
+                        Rp {(order.totalAmount || 0).toLocaleString('id-ID')}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </main>
+
+      {/* 💡 RENDER MODAL PREVIEW INVOICE JIKA ADANYA ORDER YANG DIPILIH */}
+      {selectedOrder && (
+        <InvoicePrint 
+          order={selectedOrder} 
+          onClose={() => setSelectedOrder(null)} 
+        />
+      )}
     </div>
   );
 }
