@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 
-const BACKEND_STATIC_URL = 'http://localhost:5000';
+const BACKEND_STATIC_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 export default function CartPage() {
   const queryClient = useQueryClient();
