@@ -104,11 +104,6 @@ export default function LandingPage() {
                 Mulai Belanja <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/auth/register" className="w-full sm:w-auto">
-              <Button className="h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 font-bold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] sm:w-auto">
-                Buat Akun Baru
-              </Button>
-            </Link>
 </div>
 
             {/* Trust row */}
