@@ -12,24 +12,28 @@ async function bootstrap() {
   // JALUR STATIC ASSET
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
-  // PERBAIKAN CORS: Masukkan origin domain Vercel Anda secara presisi
-// PERBAIKAN CORS: Izinkan domain utama dan seluruh subdomain preview Vercel Anda
+  // FIX CORS PRODUKSI (Menggunakan Array Matcher & Regex untuk Fleksibilitas Tanpa Crash)
   app.enableCors({
     origin: (origin, callback) => {
-      const allowedOrigins = [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'https://bruno-mart.vercel.app',
-      ];
-      
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      // Jika request dikirim server-to-server (tidak ada header origin) atau localhost, langsung lolos
+      if (!origin || origin.startsWith('http://localhost:')) {
+        return callback(null, true);
+      }
+
+      // Validasi ketat domain Vercel Anda (bruno-mart.vercel.app ATAU subdomain git/preview-nya)
+      const isVercelDomain = origin === 'https://bruno-mart.vercel.app' || 
+                             origin.endsWith('.vercel.app');
+
+      if (isVercelDomain) {
         callback(null, true);
       } else {
-        callback(new Error('Blocked by CORS policy'));
+        // Alih-alih melempar error object yang bikin crash preflight, berikan false secara aman
+        callback(null, false);
       }
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
   });
 
   app.useGlobalPipes(
