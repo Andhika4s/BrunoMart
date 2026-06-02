@@ -21,7 +21,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 import { ProductService } from './product.service';
-
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_KEY!,
@@ -50,6 +50,7 @@ export class ProductController {
   }
 
   @Get('stats/count')
+  @ApiBearerAuth()
   @Roles('ADMIN')
   async getStats() {
     const [userCount, productCount, orderCount] = await Promise.all([
@@ -65,6 +66,7 @@ export class ProductController {
   }
 
   @Post()
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @UseInterceptors(
@@ -105,6 +107,7 @@ export class ProductController {
   }
 
   @Put(':id')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async updateProduct(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
@@ -113,6 +116,7 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async deleteProduct(@Param('id') id: string) {

@@ -18,11 +18,12 @@ import { BadRequestException } from '@nestjs/common/exceptions';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @Controller('user')
 @UseGuards(JwtAuthGuard, RolesGuard) 
 export class UserController {
   constructor(private readonly userService: UserService) {}
+  @ApiBearerAuth()
   @Get()
   @Roles(Role.ADMIN) 
   async findAll() {
@@ -35,7 +36,6 @@ export class UserController {
   }
 
   @Get('profile')
-    @UseGuards(JwtAuthGuard)
       async getMyProfile(@Req() req: Request) {
         const user = req.user as { id: string };
         const data = await this.userService.findOne(user.id);
@@ -54,6 +54,8 @@ export class UserController {
 
 // Tambahkan endpoint ini untuk statistik
   @Get('stats/count')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard) // Pastikan user sudah login dan punya role yang tepat
   @Roles(Role.ADMIN)
   async getStats() {
     const userCount = await this.userService.countAll();
@@ -81,7 +83,7 @@ export class UserController {
   }
 
   @Delete('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard,)
   async deleteMyAccount(@Req() req: Request) {
     const user = req.user as { id: string; email: string };    
     if (!user || !user.id) {

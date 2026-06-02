@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import type { Request } from 'express';
-
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @Controller('orders')
 @UseGuards(JwtAuthGuard) // Semua route wajib login JWT
 export class OrderController {
@@ -54,7 +54,8 @@ export class OrderController {
 
   // 🔒 ADMIN ONLY: Pantau Semua Transaksi Masuk
   @Get('admin/all')
-  @UseGuards(RolesGuard)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard) // Pastikan user sudah login
   @Roles('ADMIN')
   async getAllOrders() {
     const data = await this.orderService.getAllOrders();
@@ -63,7 +64,8 @@ export class OrderController {
 
   // 🔒 ADMIN ONLY: Ubah Status Pengiriman / Pembayaran
   @Put('admin/:id/status')
-  @UseGuards(RolesGuard)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
     const data = await this.orderService.updateStatus(id, dto);
