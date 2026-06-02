@@ -1,7 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import * as express from 'express'; 
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as express from 'express';
+import { AppModule } from './app.module';
 const path = require('path');
 
 async function bootstrap() {
@@ -22,7 +23,11 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
       const isVercelDomain = origin === 'https://bruno-mart.vercel.app' || 
                              origin.endsWith('.vercel.app');
 
-      if (isVercelDomain) {
+      // Allow Railway deployment domain(s)
+      const isRailwayDomain = origin === 'https://brunomart-production.up.railway.app' ||
+                              origin.endsWith('.up.railway.app');
+
+      if (isVercelDomain || isRailwayDomain) {
         callback(null, true);
       } else {
         callback(null, false);
@@ -40,6 +45,21 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
       transform: true, 
     }),
   );
+
+  // Swagger / OpenAPI setup
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('BrunoMart API')
+    .setDescription('Documentasi API untuk BrunoMart Backend')
+    .setVersion('1.0')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
+    .build();
+
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  // Mount Swagger and respect the global prefix so docs are available at /api/docs
+  SwaggerModule.setup('docs', app, swaggerDocument, { useGlobalPrefix: true });
+
+  // Add a simple redirect from /docs to /api/docs for convenience
+  app.use('/docs', (req, res) => res.redirect('/api/docs'));
 
   // --- PERBAIKAN UTAMA UNTUK RAILWAY (PORT & BINDING HOST) ---
   // Ambil PORT dari environment Railway, pastikan dikonversi ke integer
