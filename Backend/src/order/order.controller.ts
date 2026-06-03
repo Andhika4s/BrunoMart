@@ -6,12 +6,18 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import type { Request } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { UserService } from '../user/user.service';
+import { ProductService } from '../product/product.service';
+
 @Controller('orders')
-@UseGuards(JwtAuthGuard) // Semua route wajib login JWT
+@UseGuards(JwtAuthGuard)
 export class OrderController {
-  productService: any;
-  userService: any;
-  constructor(private readonly orderService: OrderService) {}
+  // 2. Inject semua service yang dibutuhkan di dalam constructor
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly userService: UserService,
+    private readonly productService: ProductService,
+  ) {}
 
   // 🛍️ CUSTOMER: Proses Checkout
   @Post('checkout')

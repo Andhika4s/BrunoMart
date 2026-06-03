@@ -21,9 +21,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 import { ProductService } from './product.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiConsumes, ApiBody, ApiOperation } from '@nestjs/swagger';
 
-// Inisialisasi Supabase Client untuk handle berkas media/gambar
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_KEY!,
@@ -32,11 +31,10 @@ const supabase = createClient(
 @ApiTags('Products')
 @Controller('products')
 export class ProductController {
-  // Catatan: Pastikan UserService dan OrderService di-inject di constructor modul utama jika getStats digunakan riil
-  constructor(
-    private readonly productService: ProductService,
-  ) {}
+  constructor(private readonly productService: ProductService) {}
+
   @Get()
+  @ApiOperation({ summary: 'Mendapatkan daftar semua produk' })
   async getAllProducts(
     @Query('search') search?: string,
     @Query('category') category?: string,
@@ -50,8 +48,8 @@ export class ProductController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
+  @ApiOperation({ summary: 'Statistik jumlah produk (Admin Only)' })
   async getStats() {
-    // Fungsi pembantu jika admin dashboard memerlukan ringkasan metrik data
     const productCount = await this.productService.countAll();
     return {
       statusCode: 200,
@@ -61,27 +59,32 @@ export class ProductController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Mendapatkan detail produk' })
   async getProductDetail(@Param('id') id: string) {
     const data = await this.productService.findOne(id);
     return { status: 'success', data };
   }
-  
-  
+
   @Post()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: memoryStorage(),
-      fileFilter: (req, file, callback) => {
-        if (!file.originalname.match(/\.(jpg|jpeg|png|webp)$/)) {
-          return callback(new BadRequestException('Format file harus berupa gambar!'), false);
-        }
-        callback(null, true);
+  @UseInterceptors(FileInterceptor('image', { storage: memoryStorage() }))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        description: { type: 'string' },
+        price: { type: 'number' },
+        stock: { type: 'number' },
+        category: { type: 'string' },
+        image: { type: 'string', format: 'binary' },
       },
-    }),
-  )
+      required: ['name', 'description', 'price', 'stock', 'category', 'image'],
+    },
+  })
   async createProduct(
     @Body() createProductDto: CreateProductDto,
     @UploadedFile() file: Express.Multer.File,
@@ -89,22 +92,13 @@ export class ProductController {
     if (!file) throw new BadRequestException('Foto produk wajib diunggah!');
 
     const filename = `image-${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
-
-    const { error } = await supabase.storage
-      .from('products')
-      .upload(filename, file.buffer, { contentType: file.mimetype });
+    const { error } = await supabase.storage.from('products').upload(filename, file.buffer, { contentType: file.mimetype });
 
     if (error) throw new BadRequestException('Gagal upload gambar: ' + error.message);
 
-    const { data: urlData } = supabase.storage
-      .from('products')
-      .getPublicUrl(filename);
+    const { data: urlData } = supabase.storage.from('products').getPublicUrl(filename);
 
-    const data = await this.productService.create({
-      ...createProductDto,
-      image: urlData.publicUrl,
-    });
-
+    const data = await this.productService.create({ ...createProductDto, image: urlData.publicUrl });
     return { status: 'success', message: 'Produk berhasil ditambahkan', data };
   }
 
@@ -112,17 +106,21 @@ export class ProductController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: memoryStorage(),
-      fileFilter: (req, file, callback) => {
-        if (!file.originalname.match(/\.(jpg|jpeg|png|webp)$/)) {
-          return callback(new BadRequestException('Format file harus berupa gambar!'), false);
-        }
-        callback(null, true);
+  @UseInterceptors(FileInterceptor('image', { storage: memoryStorage() }))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        description: { type: 'string' },
+        price: { type: 'number' },
+        stock: { type: 'number' },
+        category: { type: 'string' },
+        image: { type: 'string', format: 'binary' },
       },
-    }),
-  )
+    },
+  })
   async updateProduct(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
@@ -130,36 +128,21 @@ export class ProductController {
   ) {
     let imageUrl: string | undefined;
 
-    // Skenario jika admin memutuskan untuk memperbarui berkas gambar produk
     if (file) {
-      // 1. Dapatkan referensi data produk saat ini guna menghapus media lama dari cloud bucket
       const existingProduct = await this.productService.findOne(id);
-      
-      if (existingProduct && existingProduct.image) {
-        try {
-          const oldFilename = existingProduct.image.split('/').pop();
-          if (oldFilename) {
-            await supabase.storage.from('products').remove([oldFilename]);
-          }
-        }  catch (e) {
-      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
-      console.error('Gagal membersihkan gambar lama dari bucket Supabase:', errorMessage);
-}
+      if (existingProduct?.image) {
+        const oldFilename = existingProduct.image.split('/').pop();
+        if (oldFilename) await supabase.storage.from('products').remove([oldFilename]);
       }
 
-      // 2. Unggah berkas gambar yang baru masuk ke Supabase Storage
       const filename = `image-${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
-      const { error } = await supabase.storage
-        .from('products')
-        .upload(filename, file.buffer, { contentType: file.mimetype });
-
-      if (error) throw new BadRequestException('Gagal upload gambar baru ke Supabase: ' + error.message);
-
+      const { error } = await supabase.storage.from('products').upload(filename, file.buffer, { contentType: file.mimetype });
+      if (error) throw new BadRequestException('Gagal upload gambar baru: ' + error.message);
+      
       const { data: urlData } = supabase.storage.from('products').getPublicUrl(filename);
       imageUrl = urlData.publicUrl;
     }
 
-    // 3. Teruskan payload data text & URL gambar baru ke level ProductService
     const data = await this.productService.update(id, updateProductDto, imageUrl);
     return { status: 'success', message: 'Produk berhasil diperbarui', data };
   }
@@ -169,21 +152,11 @@ export class ProductController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async deleteProduct(@Param('id') id: string) {
-    // Ambil info produk untuk hapus gambar di Supabase sebelum row di tabel kehapus
-    try {
-      const product = await this.productService.findOne(id);
-      if (product && product.image) {
-        const filename = product.image.split('/').pop();
-        if (filename) {
-          await supabase.storage.from('products').remove([filename]);
-        }
-      }
-    } 
-    catch (e) {
-  const errorMessage = e instanceof Error ? e.message : 'Unknown error';
-  console.error('Gagal membersihkan gambar lama dari bucket Supabase:', errorMessage);
-}
-
+    const product = await this.productService.findOne(id);
+    if (product?.image) {
+      const filename = product.image.split('/').pop();
+      if (filename) await supabase.storage.from('products').remove([filename]);
+    }
     await this.productService.remove(id);
     return { status: 'success', message: 'Produk berhasil dihapus' };
   }

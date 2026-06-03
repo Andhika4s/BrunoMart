@@ -1,57 +1,73 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Put, 
+  Delete, 
+  Body, 
+  Param, 
+  UseGuards, 
+  Req,
+  HttpStatus
+} from '@nestjs/common';
 import { CartService } from './cart.service';
-import { AddToCartDto, UpdateCartItemDto } from './dto/add-to-cart';
+import { AddToCartDto, UpdateCartItemDto } from './dto/add-to-cart'; // Pastikan path benar
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import express from 'express';
+import { Request } from 'express';
 
 @Controller('cart')
-@UseGuards(JwtAuthGuard) 
+@UseGuards(JwtAuthGuard) // 🔒 Semua akses cart wajib Login
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
+  // 1. GET: Lihat isi keranjang user yang sedang login
   @Get()
-  async getMyCart(@Req() req: express.Request) {
+  async getMyCart(@Req() req: Request) {
     const user = req.user as { id: string };
     const data = await this.cartService.getCart(user.id);
-    return { status: 'success', data };
-  }
-  // TAMBAHKAN HANDLER INI DI DALAM CARTCONTROLLER ANDA
-  @Get(':itemId')
-  async getCartItemById(
-    @Req() req: express.Request, 
-    @Param('itemId') itemId: string
-  ) {
-    const user = req.user as { id: string };
-    // Pastikan service Anda memiliki method pencarian item jika dibutuhkan,
-    // atau jika frontend sebenarnya berniat mengambil seluruh isi keranjang tapi salah kirim param, 
-    // Anda bisa mengarahkannya kembali ke getCart(user.id) secara aman.
-    const data = await this.cartService.getCart(user.id); 
-    return { status: 'success', data };
+    return { 
+      statusCode: HttpStatus.OK,
+      message: 'Berhasil mengambil isi keranjang',
+      data 
+    };
   }
 
+  // 2. POST: Tambah produk ke keranjang
   @Post()
-  async addItemToCart(@Req() req: express.Request, @Body() addToCartDto: AddToCartDto) {
+  async addItemToCart(@Req() req: Request, @Body() addToCartDto: AddToCartDto) {
     const user = req.user as { id: string };
     const data = await this.cartService.addToCart(user.id, addToCartDto);
-    return { status: 'success', message: 'Produk berhasil dimasukkan ke keranjang', data };
+    return { 
+      statusCode: HttpStatus.CREATED,
+      message: 'Produk berhasil ditambahkan ke keranjang', 
+      data 
+    };
   }
 
+  // 3. PUT: Update jumlah quantity produk di keranjang
   @Put(':itemId')
   async updateQuantity(
-    @Req() req: express.Request,
+    @Req() req: Request,
     @Param('itemId') itemId: string,
     @Body() updateCartItemDto: UpdateCartItemDto,
   ) {
     const user = req.user as { id: string };
     const data = await this.cartService.updateItemQuantity(user.id, itemId, updateCartItemDto);
-    return { status: 'success', message: 'Jumlah barang berhasil diperbarui', data };
+    return { 
+      statusCode: HttpStatus.OK,
+      message: 'Quantity berhasil diperbarui', 
+      data 
+    };
   }
 
-
+  // 4. DELETE: Hapus item dari keranjang
   @Delete(':itemId')
-  async removeItem(@Req() req: express.Request, @Param('itemId') itemId: string) {
+  async removeItem(@Req() req: Request, @Param('itemId') itemId: string) {
     const user = req.user as { id: string };
     await this.cartService.removeItem(user.id, itemId);
-    return { status: 'success', message: 'Barang berhasil dihapus dari keranjang' };
+    return { 
+      statusCode: HttpStatus.OK, 
+      message: 'Barang berhasil dihapus dari keranjang' 
+    };
   }
 }
