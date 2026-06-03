@@ -80,9 +80,21 @@ export class ProductService {
 }
 
   async remove(id: string) {
-    await this.findOne(id);
-    return this.prisma.product.delete({
-      where: { id },
-    });
-  }
+  await this.findOne(id); // validasi produk ada
+
+  // 1. Hapus dari CartItem dulu
+  await this.prisma.cartItem.deleteMany({
+    where: { productId: id },
+  });
+
+  // 2. Hapus dari OrderItem
+  await this.prisma.orderItem.deleteMany({
+    where: { productId: id },
+  });
+
+  // 3. Baru hapus produknya
+  return this.prisma.product.delete({
+    where: { id },
+  });
+}
 }
