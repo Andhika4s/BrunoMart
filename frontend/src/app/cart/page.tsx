@@ -70,11 +70,11 @@ const checkoutMutation = useMutation({
     toast.success('Checkout berhasil!');
     router.push('/orders');
   },
-  onError: (error: any) => {
-    // Menampilkan pesan error spesifik dari backend jika ada
-    const message = error.response?.data?.message || 'Gagal checkout.';
-    toast.error(Array.isArray(message) ? message[0] : message);
-  }
+ onError: (error: any) => {
+  const message = error.response?.data?.message || error.message || 'Gagal checkout.';
+  //                                              ↑ tambahkan ini
+  toast.error(Array.isArray(message) ? message[0] : message);
+}
 });
 
   const totalCartItems = cart?.items?.reduce((acc: number, item: any) => acc + item.quantity, 0) || 0;
@@ -133,8 +133,8 @@ const checkoutMutation = useMutation({
                   <option value="E_WALLET">E-Wallet</option>
                 </select>
               </div>
-
-              <Button 
+             
+           <Button 
                 className="w-full bg-blue-600 text-white font-bold h-10"
                 disabled={checkoutMutation.isPending || !address}
                 onClick={() => checkoutMutation.mutate()}
