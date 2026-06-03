@@ -15,6 +15,7 @@ export class OrderController {
 
   // 🛍️ CUSTOMER: Proses Checkout
   @Post('checkout')
+  @ApiBearerAuth() // Pastikan user sudah login untuk checkout
   async checkout(@Req() req: Request, @Body() createOrderDto: CreateOrderDto) {
     const user = req.user as { id: string };
     const data = await this.orderService.checkout(user.id, createOrderDto);
