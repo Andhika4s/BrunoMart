@@ -14,6 +14,7 @@ import { CartService } from './cart.service';
 import { AddToCartDto, UpdateCartItemDto } from './dto/add-to-cart'; // Pastikan path benar
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('cart')
 @UseGuards(JwtAuthGuard) // 🔒 Semua akses cart wajib Login
@@ -34,6 +35,7 @@ export class CartController {
 
   // 2. POST: Tambah produk ke keranjang
   @Post()
+  @ApiBearerAuth() // Pastikan user sudah login untuk menambahkan ke cart
   async addItemToCart(@Req() req: Request, @Body() addToCartDto: AddToCartDto) {
     const user = req.user as { id: string };
     const data = await this.cartService.addToCart(user.id, addToCartDto);
