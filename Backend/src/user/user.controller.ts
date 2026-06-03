@@ -23,6 +23,33 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @UseGuards(JwtAuthGuard, RolesGuard) 
 export class UserController {
   constructor(private readonly userService: UserService) {}
+  @Get('profile')
+      async getMyProfile(@Req() req: Request) {
+        const user = req.user as { id: string };
+        const data = await this.userService.findOne(user.id);
+    return { statusCode: HttpStatus.OK, data };
+  }
+  
+  // Tambahkan endpoint ini untuk statistik
+    @Get('stats/count')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard) // Pastikan user sudah login dan punya role yang tepat
+    @Roles(Role.ADMIN)
+    async getStats() {
+      const userCount = await this.userService.countAll();
+      // Jika Anda punya ProductService, panggil di sini juga
+      // const productCount = await this.productService.countAll(); 
+      
+      return {
+        statusCode: HttpStatus.OK,
+        data: {
+          users: userCount,
+          // products: productCount,
+        },
+      };
+    }
+
+    
   @ApiBearerAuth()
   @Get()
   @Roles(Role.ADMIN) 
@@ -35,13 +62,6 @@ export class UserController {
     };
   }
 
-  @Get('profile')
-      async getMyProfile(@Req() req: Request) {
-        const user = req.user as { id: string };
-        const data = await this.userService.findOne(user.id);
-    return { statusCode: HttpStatus.OK, data };
-  }
-  
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const user = await this.userService.findOne(id);
@@ -52,24 +72,6 @@ export class UserController {
     };
   }
 
-// Tambahkan endpoint ini untuk statistik
-  @Get('stats/count')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard) // Pastikan user sudah login dan punya role yang tepat
-  @Roles(Role.ADMIN)
-  async getStats() {
-    const userCount = await this.userService.countAll();
-    // Jika Anda punya ProductService, panggil di sini juga
-    // const productCount = await this.productService.countAll(); 
-    
-    return {
-      statusCode: HttpStatus.OK,
-      data: {
-        users: userCount,
-        // products: productCount,
-      },
-    };
-  }
 
 
   @Put(':id')

@@ -36,7 +36,6 @@ export class ProductController {
   constructor(
     private readonly productService: ProductService,
   ) {}
-
   @Get()
   async getAllProducts(
     @Query('search') search?: string,
@@ -44,12 +43,6 @@ export class ProductController {
     @Query('sort') sort?: string,
   ) {
     const data = await this.productService.findAll(search, category, sort);
-    return { status: 'success', data };
-  }
-
-  @Get(':id')
-  async getProductDetail(@Param('id') id: string) {
-    const data = await this.productService.findOne(id);
     return { status: 'success', data };
   }
 
@@ -67,6 +60,13 @@ export class ProductController {
     };
   }
 
+  @Get(':id')
+  async getProductDetail(@Param('id') id: string) {
+    const data = await this.productService.findOne(id);
+    return { status: 'success', data };
+  }
+  
+  
   @Post()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)

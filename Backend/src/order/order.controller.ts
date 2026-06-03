@@ -22,6 +22,8 @@ export class OrderController {
   }
 
   @Get('stats/count')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard) 
       @Roles('ADMIN')
       async getStats() {
       // 1. Ambil data count dari masing-masing service secara paralel
