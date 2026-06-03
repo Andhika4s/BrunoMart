@@ -8,7 +8,7 @@ import type { Request } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UserService } from '../user/user.service';
 import { ProductService } from '../product/product.service';
-
+@ApiBearerAuth()
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 export class OrderController {

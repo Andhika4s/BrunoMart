@@ -15,7 +15,7 @@ import { AddToCartDto, UpdateCartItemDto } from './dto/add-to-cart'; // Pastikan
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
 import { ApiBearerAuth } from '@nestjs/swagger';
-
+@ApiBearerAuth()
 @Controller('cart')
 @UseGuards(JwtAuthGuard) // 🔒 Semua akses cart wajib Login
 export class CartController {

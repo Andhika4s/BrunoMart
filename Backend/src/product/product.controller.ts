@@ -28,6 +28,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY!,
 );
 
+@ApiBearerAuth()
 @ApiTags('Products')
 @Controller('products')
 export class ProductController {
