@@ -16,11 +16,9 @@ export default function CartPage() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  // State untuk Data Checkout
   const [address, setAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('TRANSFER_BANK');
 
-  // 1. AMBIL DATA KERANJANG
   const { data: cartData, isLoading, isError } = useQuery<any>({
     queryKey: ['cart'],
     queryFn: async () => {
@@ -31,20 +29,50 @@ export default function CartPage() {
 
   const cart = cartData?.items ? cartData : { items: cartData?.data?.items || cartData?.items || [] };
 
-  // 2. MUTASI UPDATE QUANTITY
-  const updateQuantityMutation = useMutation({
-    mutationFn: async ({ itemId, productId, quantity }: { itemId: string; productId: string; quantity: number }) => {
-      try {
-        return await api.put(`/cart/${itemId}`, { quantity });
-      } catch (err) {
-        return await api.put('/cart', { productId, quantity });
-      }
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cart'] }),
-    onError: (error: any) => toast.error(error.response?.data?.message || 'Gagal mengubah jumlah.'),
-  });
+ const updateQuantityMutation = useMutation({
+  mutationFn: async ({ itemId, productId, quantity }: { itemId: string; productId: string; quantity: number }) => {
+    try {
+      return await api.put(`/cart/${itemId}`, { quantity });
+    } catch (err) {
+      return await api.put('/cart', { productId, quantity });
+    }
+  },
 
-  // 3. MUTASI HAPUS ITEM
+      // ✅ Update UI duluan sebelum API selesai
+      onMutate: async ({ itemId, quantity }) => {
+        await queryClient.cancelQueries({ queryKey: ['cart'] });
+
+        const previousCart = queryClient.getQueryData(['cart']);
+
+        queryClient.setQueryData(['cart'], (oldData: any) => {
+          if (!oldData) return oldData;
+
+          const updateItems = (items: any[]) =>
+            items
+              .map((item: any) => item.id === itemId ? { ...item, quantity } : item)
+              .filter((item: any) => item.quantity > 0); // hapus kalau quantity jadi 0
+
+          if (oldData.items) {
+            return { ...oldData, items: updateItems(oldData.items) };
+          }
+          return oldData;
+        });
+
+        return { previousCart }; // simpan untuk rollback
+      },
+
+      // ✅ Kalau API gagal, rollback ke data sebelumnya
+      onError: (error: any, _, context: any) => {
+        if (context?.previousCart) {
+          queryClient.setQueryData(['cart'], context.previousCart);
+        }
+        toast.error(error.response?.data?.message || 'Gagal mengubah jumlah.');
+      },
+
+      // ✅ Setelah API selesai, sync dengan data server
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ['cart'] }),
+    });
+
   const deleteItemMutation = useMutation({
     mutationFn: async ({ itemId }: { itemId: string }) => await api.delete(`/cart/${itemId}`),
     onSuccess: () => {
@@ -53,29 +81,32 @@ export default function CartPage() {
     },
   });
 
-  // 4. MUTASI CHECKOUT (Dengan Data DTO yang lengkap)
-  // Ubah bagian checkoutMutation di CartPage
-const checkoutMutation = useMutation({
-  mutationFn: async () => {
-    // Tambahkan trim() untuk memastikan alamat tidak hanya spasi
-    if (!address.trim()) throw new Error('Alamat wajib diisi');
-    
-    return await api.post('/orders/checkout', {
-      address: address.trim(),
-      paymentMethod: paymentMethod
-    });
-  },
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['cart'] });
-    toast.success('Checkout berhasil!');
-    router.push('/orders');
-  },
- onError: (error: any) => {
-  const message = error.response?.data?.message || error.message || 'Gagal checkout.';
-  //                                              ↑ tambahkan ini
-  toast.error(Array.isArray(message) ? message[0] : message);
-}
-});
+  const checkoutMutation = useMutation({
+    mutationFn: async () => {
+      return await api.post('/orders/checkout', {
+        address: address.trim(),
+        paymentMethod: paymentMethod,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      toast.success('Checkout berhasil!');
+      router.push('/orders');
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || error.message || 'Gagal checkout.';
+      toast.error(Array.isArray(message) ? message[0] : message);
+    },
+  });
+
+  // ✅ Validasi dilakukan di sini, SEBELUM mutate dipanggil
+  const handleCheckout = () => {
+    if (!address.trim()) {
+      toast.error('Alamat pengiriman wajib diisi!');
+      return;
+    }
+    checkoutMutation.mutate();
+  };
 
   const totalCartItems = cart?.items?.reduce((acc: number, item: any) => acc + item.quantity, 0) || 0;
   const totalPrice = cart?.items?.reduce((acc: number, item: any) => acc + ((item.product?.price || 0) * item.quantity), 0) || 0;
@@ -123,21 +154,33 @@ const checkoutMutation = useMutation({
 
             <div className="h-fit bg-white p-6 rounded-xl border shadow-sm space-y-4">
               <h2 className="font-bold border-b pb-2">Ringkasan Belanja</h2>
-              <div className="flex justify-between text-sm"><span>Total Harga</span> <span className="font-bold text-blue-600">Rp {totalPrice.toLocaleString('id-ID')}</span></div>
-              
-              {/* Form Input Checkout */}
+              <div className="flex justify-between text-sm">
+                <span>Total Harga</span>
+                <span className="font-bold text-blue-600">Rp {totalPrice.toLocaleString('id-ID')}</span>
+              </div>
+
               <div className="space-y-3 pt-4 border-t">
-                <input className="w-full text-xs p-2 border rounded" placeholder="Alamat Pengiriman" value={address} onChange={(e) => setAddress(e.target.value)} />
-                <select className="w-full text-xs p-2 border rounded" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
+                <input
+                  className="w-full text-xs p-2 border rounded"
+                  placeholder="Alamat Pengiriman"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+                <select
+                  className="w-full text-xs p-2 border rounded"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
                   <option value="TRANSFER_BANK">Transfer Bank</option>
                   <option value="E_WALLET">E-Wallet</option>
                 </select>
               </div>
-             
-           <Button 
+
+              {/* ✅ disabled hanya saat loading, onClick pakai handleCheckout */}
+              <Button
                 className="w-full bg-blue-600 text-white font-bold h-10"
-                disabled={checkoutMutation.isPending || !address}
-                onClick={() => checkoutMutation.mutate()}
+                disabled={checkoutMutation.isPending}
+                onClick={handleCheckout}
               >
                 {checkoutMutation.isPending ? 'Memproses...' : 'Checkout Sekarang'}
               </Button>
