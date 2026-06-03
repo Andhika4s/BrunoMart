@@ -67,7 +67,7 @@ export default function AuthPage() {
           alert('Token tidak ditemukan dari response server backend!');
         }
 
-    } catch (error: any) {
+    } catch (error: any) {  
       console.error('Error Auth:', error);
       // Mengambil pesan error asli dari NestJS jika ada
       const errorMessage = error.response?.data?.message || 'Gagal menyambung ke server backend NestJS port 5000!';

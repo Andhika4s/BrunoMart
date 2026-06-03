@@ -156,7 +156,7 @@ export default function Navbar() {
                   <LogIn className="h-3.5 w-3.5 mr-1.5 opacity-90" /> Sign In
                 </Button>
               </Link>
-              <Link href="/auth/register">
+              <Link href="/auth/login">
                 <Button size="sm" className={`text-xs font-bold px-4 h-9 rounded-xl transition-all duration-200 ${isLandingPage ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/10' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
                   <UserPlus className="h-3.5 w-3.5 mr-1.5 opacity-90" /> Sign Up
                 </Button>
